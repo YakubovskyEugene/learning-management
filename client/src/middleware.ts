@@ -8,19 +8,18 @@ const isTeacherRoute = createRouteMatcher(["/teacher/(.*)"]);
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
 
-  // Если маршрут не защищён — просто пропускаем
+  // Публичные маршруты — пропускаем
   if (!isStudentRoute(req) && !isTeacherRoute(req)) {
     return NextResponse.next();
   }
 
-  // Если пользователь не авторизован — редирект на login (или Unauthorized)
+  // Неавторизован — редирект или 401
   if (!userId) {
     return new NextResponse("Unauthorized", { status: 401 });
-    // Или так:
-    // return NextResponse.redirect(new URL("/sign-in", req.url));
   }
 
-  const user = await clerkClient.users.getUser(userId);
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
   const userRole = (user.publicMetadata?.userType as "student" | "teacher") || "student";
 
   console.log("Middleware — userId:", userId, "userRole:", userRole);
@@ -42,4 +41,3 @@ export const config = {
     "/(api|trpc)(.*)",
   ],
 };
-
