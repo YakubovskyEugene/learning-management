@@ -10,7 +10,8 @@ export default clerkMiddleware(async (auth, req) => {
 
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const user = await clerkClient.users.getUser(userId);
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
   const userRole = (user.publicMetadata?.userType as "student" | "teacher") || "student";
 
   console.log("Middleware — userId:", userId, "userRole:", userRole);
