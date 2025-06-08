@@ -8,21 +8,23 @@ const isTeacherRoute = createRouteMatcher(["/teacher/(.*)"]);
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
 
-  // Публичные маршруты — пропускаем
-  if (!isStudentRoute(req) && !isTeacherRoute(req)) {
-    return NextResponse.next();
-  }
-
-  // Неавторизован — редирект или 401
   if (!userId) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
+  // Тянем полные данные пользователя через Clerk API
+  const user = await clerkClient.users.getUser(userId);
+
   const userRole = (user.publicMetadata?.userType as "student" | "teacher") || "student";
 
-  console.log("Middleware — userId:", userId, "userRole:", userRole);
+  console.log(
+    "Middleware - userId:",
+    userId,
+    "userRole:",
+    userRole,
+    "Path:",
+    req.nextUrl.pathname
+  );
 
   if (isStudentRoute(req) && userRole !== "student") {
     return NextResponse.redirect(new URL("/teacher/courses", req.url));
