@@ -47,7 +47,7 @@ const AppSidebar = () => {
   };
 
   if (!isLoaded) return <Loading />;
-  if (!user) return <div>User not found</div>;
+  if (!user) return <div>Пользователь не найден</div>;
 
   const userType =
     (user.publicMetadata.userType as "student" | "teacher") || "student";
@@ -137,7 +137,7 @@ const AppSidebar = () => {
                 className="app-sidebar__signout"
               >
                 <LogOut className="mr-2 h-6 w-6" />
-                <span>Sign out</span>
+                <span>Выйти</span>
               </button>
             </SidebarMenuButton>
           </SidebarMenuItem>

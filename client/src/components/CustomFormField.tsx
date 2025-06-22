@@ -274,7 +274,7 @@ const MultiInputField: React.FC<MultiInputFieldProps> = ({
         className="mt-2 text-customgreys-dirtyGrey"
       >
         <Plus className="w-4 h-4 mr-2" />
-        Add Item
+        Добавить
       </Button>
     </div>
   );

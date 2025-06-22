@@ -41,7 +41,7 @@ const TeacherCourseCard = ({
           </CardDescription>
 
           <p className="text-sm mb-2">
-            Status:{" "}
+            Статус:{" "}
             <span
               className={cn(
                 "font-semibold px-2 py-1 rounded",
@@ -58,7 +58,7 @@ const TeacherCourseCard = ({
               <span className="font-bold text-white-100">
                 {course.enrollments.length}
               </span>{" "}
-              Student{course.enrollments.length > 1 ? "s" : ""} Enrolled
+              Участника/ов
             </p>
           )}
         </div>
@@ -72,7 +72,7 @@ const TeacherCourseCard = ({
                   onClick={() => onEdit(course)}
                 >
                   <Pencil className="w-4 h-4 mr-2" />
-                  Edit
+                  Изменить
                 </Button>
               </div>
               <div>
@@ -81,12 +81,12 @@ const TeacherCourseCard = ({
                   onClick={() => onDelete(course)}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
+                  Удалить
                 </Button>
               </div>
             </>
           ) : (
-            <p className="text-sm text-gray-500 italic">View Only</p>
+            <p className="text-sm text-gray-500 italic">Только для просмотра</p>
           )}
         </div>
       </CardContent>

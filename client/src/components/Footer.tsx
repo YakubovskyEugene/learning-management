@@ -4,9 +4,9 @@ import React from "react";
 const Footer = () => {
   return (
     <div className="footer">
-      <p>&copy; 2025 MyLMS. All Rights Reserved.</p>
+      <p>&copy; 2025 MyLMS. Все права защищены.</p>
       <div className="footer__links">
-        {["About", "Privacy Policy", "Licensing", "Contact"].map((item) => (
+        {["О нас", "Политика конфиденциальности", "Лицензирование", "Контакты"].map((item) => (
           <Link
             key={item}
             href={`/${item.toLowerCase().replace(" ", "-")}`}

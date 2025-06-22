@@ -28,8 +28,8 @@ const customBaseQuery = async (
       const errorMessage =
         errorData?.message ||
         result.error.status.toString() ||
-        "An error occurred";
-      toast.error(`Error: ${errorMessage}`);
+        "Произошла ошибка";
+      toast.error(`Ошибка: ${errorMessage}`);
     }
 
     const isMutationRequest =
@@ -52,7 +52,7 @@ const customBaseQuery = async (
     return result;
   } catch (error: unknown) {
     const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+      error instanceof Error ? error.message : "Неизвестная ошибка";
 
     return { error: { status: "FETCH_ERROR", error: errorMessage } };
   }
@@ -79,7 +79,7 @@ export const api = createApi({
 
     /* 
     ===============
-    COURSES
+    КУРСЫ
     =============== 
     */
     getCourses: build.query<Course[], { category?: string }>({
@@ -148,7 +148,7 @@ export const api = createApi({
 
     /* 
     ===============
-    TRANSACTIONS
+    ТРАНЗАКЦИИ
     =============== 
     */
     getTransactions: build.query<Transaction[], string>({
@@ -174,7 +174,7 @@ export const api = createApi({
 
     /* 
     ===============
-    USER COURSE PROGRESS
+    ПРОГРЕСС ПОЛЬЗОВАТЕЛЯ В КУРСАХ
     =============== 
     */
     getUserEnrolledCourses: build.query<Course[], string>({

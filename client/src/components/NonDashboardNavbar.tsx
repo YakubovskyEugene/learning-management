@@ -24,8 +24,8 @@ const NonDashboardNavbar = () => {
                 className="nondashboard-navbar__search-input"
                 scroll={false}
               >
-                <span className="hidden sm:inline">Search Courses</span>
-                <span className="sm:hidden">Search</span>
+                <span className="hidden sm:inline">Искать курсы</span>
+                <span className="sm:hidden">Искать</span>
               </Link>
               <BookOpen
                 className="nondashboard-navbar__search-icon"
@@ -62,14 +62,14 @@ const NonDashboardNavbar = () => {
               className="nondashboard-navbar__auth-button--login"
               scroll={false}
             >
-              Log in
+              Войти
             </Link>
             <Link
               href="/signup"
               className="nondashboard-navbar__auth-button--signup"
               scroll={false}
             >
-              Sign up
+              Зарегистрироваться
             </Link>
           </SignedOut>
         </div>

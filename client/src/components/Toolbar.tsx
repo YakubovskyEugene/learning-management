@@ -31,7 +31,7 @@ const Toolbar = ({ onSearch, onCategoryChange }: ToolbarProps) => {
         </SelectTrigger>
         <SelectContent className="bg-customgreys-primarybg hover:bg-customgreys-primarybg">
           <SelectItem value="all" className="toolbar__select-item">
-            All Categories
+            Все категории
           </SelectItem>
           {courseCategories.map((category) => (
             <SelectItem

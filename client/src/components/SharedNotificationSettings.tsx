@@ -55,7 +55,7 @@ const SharedNotificationSettings = ({
     }
   };
 
-  if (!user) return <div>Please sign in to manage your settings.</div>;
+  if (!user) return <div>Войдите в систему чтобы изменять настройки.</div>;
 
   return (
     <div className="notification-settings">
@@ -95,7 +95,7 @@ const SharedNotificationSettings = ({
           </div>
 
           <Button type="submit" className="notification-settings__submit">
-            Update Settings
+            Обновить настройки
           </Button>
         </form>
       </Form>
