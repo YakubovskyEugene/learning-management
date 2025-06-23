@@ -35,7 +35,7 @@ const CheckoutDetailsPage = () => {
             w-full md:w-1/2
             max-w-[400px] mx-auto md:mx-0
             min-w-[0] md:min-w-[320px]
-            flex items-center
+            flex items-center justify-center
           "
         >
           <div className="w-full">
