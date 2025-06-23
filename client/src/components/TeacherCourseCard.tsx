@@ -50,7 +50,7 @@ const TeacherCourseCard = ({
                   : "bg-red-500/20 text-red-400"
               )}
             >
-              {course.status}
+              {course.status === "Published" ? "Опубликовано" : "Черновик"}
             </span>
           </p>
           {course.enrollments && (

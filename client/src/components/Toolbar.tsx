@@ -22,12 +22,12 @@ const Toolbar = ({ onSearch, onCategoryChange }: ToolbarProps) => {
         type="text"
         value={searchTerm}
         onChange={(e) => handleSearch(e.target.value)}
-        placeholder="Search courses"
+        placeholder="Искать курсы"
         className="toolbar__search"
       />
       <Select onValueChange={onCategoryChange}>
         <SelectTrigger className="toolbar__select">
-          <SelectValue placeholder="Categories" />
+          <SelectValue placeholder="Категории" />
         </SelectTrigger>
         <SelectContent className="bg-customgreys-primarybg hover:bg-customgreys-primarybg">
           <SelectItem value="all" className="toolbar__select-item">

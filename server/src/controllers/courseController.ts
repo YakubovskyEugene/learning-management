@@ -16,9 +16,9 @@ export const listCourses = async (
       category && category !== "all"
         ? await Course.scan("category").eq(category).exec()
         : await Course.scan().exec();
-    res.json({ message: "Courses retrieved successfully", data: courses });
+    res.json({ message: "Курсы успешно получены", data: courses });
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving courses", error });
+    res.status(500).json({ message: "Ошибка при получении курсов", error });
   }
 };
 
@@ -27,13 +27,13 @@ export const getCourse = async (req: Request, res: Response): Promise<void> => {
   try {
     const course = await Course.get(courseId);
     if (!course) {
-      res.status(404).json({ message: "Course not found" });
+      res.status(404).json({ message: "Курс не найден" });
       return;
     }
 
-    res.json({ message: "Course retrieved successfully", data: course });
+    res.json({ message: "Курс успешно получен", data: course });
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving course", error });
+    res.status(500).json({ message: "Ошибка при получении курса", error });
   }
 };
 
@@ -45,7 +45,7 @@ export const createCourse = async (
     const { teacherId, teacherName } = req.body;
 
     if (!teacherId || !teacherName) {
-      res.status(400).json({ message: "Teacher Id and name are required" });
+      res.status(400).json({ message: "Необходимо указать ID и имя преподавателя" });
       return;
     }
 
@@ -65,9 +65,9 @@ export const createCourse = async (
     });
     await newCourse.save();
 
-    res.json({ message: "Course created successfully", data: newCourse });
+    res.json({ message: "Курс успешно создан", data: newCourse });
   } catch (error) {
-    res.status(500).json({ message: "Error creating course", error });
+    res.status(500).json({ message: "Ошибка при создании курса", error });
   }
 };
 
@@ -82,14 +82,14 @@ export const updateCourse = async (
   try {
     const course = await Course.get(courseId);
     if (!course) {
-      res.status(404).json({ message: "Course not found" });
+      res.status(404).json({ message: "Курс не найден" });
       return;
     }
 
     if (course.teacherId !== userId) {
       res
         .status(403)
-        .json({ message: "Not authorized to update this course " });
+        .json({ message: "Нет прав для изменения этого курса" });
       return;
     }
 
@@ -97,8 +97,8 @@ export const updateCourse = async (
       const price = parseInt(updateData.price);
       if (isNaN(price)) {
         res.status(400).json({
-          message: "Invalid price format",
-          error: "Price must be a valid number",
+          message: "Некорректный формат цены",
+          error: "Цена должна быть числом",
         });
         return;
       }
@@ -124,9 +124,9 @@ export const updateCourse = async (
     Object.assign(course, updateData);
     await course.save();
 
-    res.json({ message: "Course updated successfully", data: course });
+    res.json({ message: "Курс успешно обновлён", data: course });
   } catch (error) {
-    res.status(500).json({ message: "Error updating course", error });
+    res.status(500).json({ message: "Ошибка при обновлении курса", error });
   }
 };
 
@@ -140,22 +140,22 @@ export const deleteCourse = async (
   try {
     const course = await Course.get(courseId);
     if (!course) {
-      res.status(404).json({ message: "Course not found" });
+      res.status(404).json({ message: "Курс не найден" });
       return;
     }
 
     if (course.teacherId !== userId) {
       res
         .status(403)
-        .json({ message: "Not authorized to delete this course " });
+        .json({ message: "Нет прав для удаления этого курса" });
       return;
     }
 
     await Course.delete(courseId);
 
-    res.json({ message: "Course deleted successfully", data: course });
+    res.json({ message: "Курс успешно удалён", data: course });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting course", error });
+    res.status(500).json({ message: "Ошибка при удалении курса", error });
   }
 };
 
@@ -166,7 +166,7 @@ export const getUploadVideoUrl = async (
   const { fileName, fileType } = req.body;
 
   if (!fileName || !fileType) {
-    res.status(400).json({ message: "File name and type are required" });
+    res.status(400).json({ message: "Необходимо указать имя и тип файла" });
     return;
   }
 
@@ -185,10 +185,10 @@ export const getUploadVideoUrl = async (
     const videoUrl = `${process.env.CLOUDFRONT_DOMAIN}/videos/${uniqueId}/${fileName}`;
 
     res.json({
-      message: "Upload URL generated successfully",
+      message: "Ссылка для загрузки успешно сгенерирована",
       data: { uploadUrl, videoUrl },
     });
   } catch (error) {
-    res.status(500).json({ message: "Error generating upload URL", error });
+    res.status(500).json({ message: "Ошибка при генерации ссылки для загрузки", error });
   }
 };

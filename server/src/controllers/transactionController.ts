@@ -9,12 +9,13 @@ dotenv.config();
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error(
-    "STRIPE_SECRET_KEY os required but was not found in env variables"
+    "STRIPE_SECRET_KEY обязательна, но не найдена в переменных окружения"
   );
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// Получить список транзакций
 export const listTransactions = async (
   req: Request,
   res: Response
@@ -27,14 +28,15 @@ export const listTransactions = async (
       : await Transaction.scan().exec();
 
     res.json({
-      message: "Transactions retrieved successfully",
+      message: "Транзакции успешно получены",
       data: transactions,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving transactions", error });
+    res.status(500).json({ message: "Ошибка при получении транзакций", error });
   }
 };
 
+// Создать Stripe Payment Intent
 export const createStripePaymentIntent = async (
   req: Request,
   res: Response
@@ -64,10 +66,11 @@ export const createStripePaymentIntent = async (
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Error creating stripe payment intent", error });
+      .json({ message: "Ошибка при создании платежа Stripe", error });
   }
 };
 
+// Создать транзакцию и прогресс по курсу
 export const createTransaction = async (
   req: Request,
   res: Response
@@ -75,10 +78,10 @@ export const createTransaction = async (
   const { userId, courseId, transactionId, amount, paymentProvider } = req.body;
 
   try {
-    // 1. get course info
+    // 1. Получить информацию о курсе
     const course = await Course.get(courseId);
 
-    // 2. create transaction record
+    // 2. Создать запись о транзакции
     const newTransaction = new Transaction({
       dateTime: new Date().toISOString(),
       userId,
@@ -89,7 +92,7 @@ export const createTransaction = async (
     });
     await newTransaction.save();
 
-    // 3. create initial course progress
+    // 3. Создать начальный прогресс по курсу
     const initialProgress = new UserCourseProgress({
       userId,
       courseId,
@@ -106,7 +109,7 @@ export const createTransaction = async (
     });
     await initialProgress.save();
 
-    // 4. add enrollment to relevant course
+    // 4. Добавить пользователя в список записавшихся на курс
     await Course.update(
       { courseId },
       {
@@ -117,7 +120,7 @@ export const createTransaction = async (
     );
 
     res.json({
-      message: "Purchased Course successfully",
+      message: "Курс успешно приобретён",
       data: {
         transaction: newTransaction,
         courseProgress: initialProgress,
@@ -126,6 +129,6 @@ export const createTransaction = async (
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Error creating transaction and enrollment", error });
+      .json({ message: "Ошибка при создании транзакции и записи на курс", error });
   }
 };

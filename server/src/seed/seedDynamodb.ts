@@ -15,7 +15,7 @@ import dotenv from "dotenv";
 dotenv.config();
 let client: DynamoDBClient;
 
-/* DynamoDB Configuration */
+/* Конфигурация DynamoDB */
 const isProduction = process.env.NODE_ENV === "production";
 
 if (!isProduction) {
@@ -34,7 +34,7 @@ if (!isProduction) {
   });
 }
 
-/* DynamoDB Suppress Tag Warnings */
+/* Отключение предупреждений о тегах DynamoDB Local */
 const originalWarn = console.warn.bind(console);
 console.warn = (message, ...args) => {
   if (
@@ -44,6 +44,7 @@ console.warn = (message, ...args) => {
   }
 };
 
+// Создание таблиц
 async function createTables() {
   const models = [Transaction, UserCourseProgress, Course];
 
@@ -59,10 +60,10 @@ async function createTables() {
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       await table.initialize();
-      console.log(`Table created and initialized: ${tableName}`);
+      console.log(`Таблица создана и инициализирована: ${tableName}`);
     } catch (error: any) {
       console.error(
-        `Error creating table ${tableName}:`,
+        `Ошибка при создании таблицы ${tableName}:`,
         error.message,
         error.stack
       );
@@ -70,6 +71,7 @@ async function createTables() {
   }
 }
 
+// Засев данных в таблицу
 async function seedData(tableName: string, filePath: string) {
   const data: { [key: string]: any }[] = JSON.parse(
     fs.readFileSync(filePath, "utf8")
@@ -79,14 +81,14 @@ async function seedData(tableName: string, filePath: string) {
     tableName.charAt(0).toUpperCase() + tableName.slice(1)
   );
 
-  console.log(`Seeding data to table: ${formattedTableName}`);
+  console.log(`Засев данных в таблицу: ${formattedTableName}`);
 
   for (const item of data) {
     try {
       await dynamoose.model(formattedTableName).create(item);
     } catch (err) {
       console.error(
-        `Unable to add item to ${formattedTableName}. Error:`,
+        `Не удалось добавить элемент в ${formattedTableName}. Ошибка:`,
         JSON.stringify(err, null, 2)
       );
     }
@@ -94,24 +96,26 @@ async function seedData(tableName: string, filePath: string) {
 
   console.log(
     "\x1b[32m%s\x1b[0m",
-    `Successfully seeded data to table: ${formattedTableName}`
+    `Данные успешно засеяны в таблицу: ${formattedTableName}`
   );
 }
 
+// Удаление таблицы
 async function deleteTable(baseTableName: string) {
   let deleteCommand = new DeleteTableCommand({ TableName: baseTableName });
   try {
     await client.send(deleteCommand);
-    console.log(`Table deleted: ${baseTableName}`);
+    console.log(`Таблица удалена: ${baseTableName}`);
   } catch (err: any) {
     if (err.name === "ResourceNotFoundException") {
-      console.log(`Table does not exist: ${baseTableName}`);
+      console.log(`Таблица не существует: ${baseTableName}`);
     } else {
-      console.error(`Error deleting table ${baseTableName}:`, err);
+      console.error(`Ошибка при удалении таблицы ${baseTableName}:`, err);
     }
   }
 }
 
+// Удаление всех таблиц
 async function deleteAllTables() {
   const listTablesCommand = new ListTablesCommand({});
   const { TableNames } = await client.send(listTablesCommand);
@@ -124,6 +128,7 @@ async function deleteAllTables() {
   }
 }
 
+// Основная функция засевки
 export default async function seed() {
   await deleteAllTables();
   await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -141,8 +146,9 @@ export default async function seed() {
   }
 }
 
+// Запуск скрипта напрямую
 if (require.main === module) {
   seed().catch((error) => {
-    console.error("Failed to run seed script:", error);
+    console.error("Не удалось запустить скрипт засевки:", error);
   });
 }

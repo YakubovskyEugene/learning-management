@@ -5,6 +5,7 @@ import Course from "../models/courseModel";
 import { calculateOverallProgress } from "../utils/utils";
 import { mergeSections } from "../utils/utils";
 
+// Получить курсы, на которые пользователь записан
 export const getUserEnrolledCourses = async (
   req: Request,
   res: Response
@@ -13,7 +14,7 @@ export const getUserEnrolledCourses = async (
   const auth = getAuth(req);
 
   if (!auth || auth.userId !== userId) {
-    res.status(403).json({ message: "Access denied" });
+    res.status(403).json({ message: "Доступ запрещён" });
     return;
   }
 
@@ -24,16 +25,17 @@ export const getUserEnrolledCourses = async (
     const courseIds = enrolledCourses.map((item: any) => item.courseId);
     const courses = await Course.batchGet(courseIds);
     res.json({
-      message: "Enrolled courses retrieved successfully",
+      message: "Курсы, на которые вы записаны, успешно получены",
       data: courses,
     });
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Error retrieving enrolled courses", error });
+      .json({ message: "Ошибка при получении курсов, на которые вы записаны", error });
   }
 };
 
+// Получить прогресс пользователя по курсу
 export const getUserCourseProgress = async (
   req: Request,
   res: Response
@@ -45,20 +47,21 @@ export const getUserCourseProgress = async (
     if (!progress) {
       res
         .status(404)
-        .json({ message: "Course progress not found for this user" });
+        .json({ message: "Прогресс по курсу для этого пользователя не найден" });
       return;
     }
     res.json({
-      message: "Course progress retrieved successfully",
+      message: "Прогресс по курсу успешно получен",
       data: progress,
     });
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Error retrieving user course progress", error });
+      .json({ message: "Ошибка при получении прогресса по курсу", error });
   }
 };
 
+// Обновить прогресс пользователя по курсу
 export const updateUserCourseProgress = async (
   req: Request,
   res: Response
@@ -70,7 +73,7 @@ export const updateUserCourseProgress = async (
     let progress = await UserCourseProgress.get({ userId, courseId });
 
     if (!progress) {
-      // If no progress exists, create initial progress
+      // Если прогресс не существует, создать начальный прогресс
       progress = new UserCourseProgress({
         userId,
         courseId,
@@ -80,7 +83,7 @@ export const updateUserCourseProgress = async (
         lastAccessedTimestamp: new Date().toISOString(),
       });
     } else {
-      // Merge existing progress with new progress data
+      // Объединить существующий прогресс с новыми данными
       progress.sections = mergeSections(
         progress.sections,
         progressData.sections || []
@@ -92,13 +95,13 @@ export const updateUserCourseProgress = async (
     await progress.save();
 
     res.json({
-      message: "",
+      message: "Прогресс по курсу успешно обновлён",
       data: progress,
     });
   } catch (error) {
-    console.error("Error updating progress:", error);
+    console.error("Ошибка при обновлении прогресса:", error);
     res.status(500).json({
-      message: "Error updating user course progress",
+      message: "Ошибка при обновлении прогресса по курсу",
       error,
     });
   }

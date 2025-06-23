@@ -106,7 +106,7 @@ const Landing = () => {
         viewport={{ amount: 0.3, once: true }}
         className="landing__featured"
       >
-        <h2 className="landing__featured-title">Избранные курсы</h2>
+        <h2 className="landing__featured-title">Рекомендуемые курсы</h2>
         <p className="landing__featured-description">
           От начинающих до продвинутых, для всех сфер — у нас есть подходящие курсы для вашего развития и успешного обучения.
         </p>

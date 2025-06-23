@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { clerkClient } from "../index";
 
+// Обновить данные пользователя Clerk
 export const updateUser = async (
   req: Request,
   res: Response
@@ -15,8 +16,8 @@ export const updateUser = async (
       },
     });
 
-    res.json({ message: "User updated successfully", data: user });
+    res.json({ message: "Пользователь успешно обновлён", data: user });
   } catch (error) {
-    res.status(500).json({ message: "Error updating user", error });
+    res.status(500).json({ message: "Ошибка при обновлении пользователя", error });
   }
 };
