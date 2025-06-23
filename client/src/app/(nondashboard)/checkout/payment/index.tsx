@@ -27,7 +27,7 @@ const PaymentPageContent = () => {
     e.preventDefault();
 
     if (!stripe || !elements) {
-      toast.error("Stripe service is not available");
+      toast.error("Сервис Stripe недоступен");
       return;
     }
 
@@ -68,12 +68,12 @@ const PaymentPageContent = () => {
   return (
     <div className="payment">
       <div className="payment__container">
-        {/* Order Summary */}
+        {/* Сводка заказа */}
         <div className="payment__preview">
           <CoursePreview course={course} />
         </div>
 
-        {/* Pyament Form */}
+        {/* Форма оплаты */}
         <div className="payment__form-container">
           <form
             id="payment-form"
@@ -81,18 +81,18 @@ const PaymentPageContent = () => {
             className="payment__form"
           >
             <div className="payment__content">
-              <h1 className="payment__title">Checkout</h1>
+              <h1 className="payment__title">Оплата</h1>
               <p className="payment__subtitle">
-                Fill out the payment details below to complete your purchase.
+                Заполните данные для оплаты, чтобы завершить покупку.
               </p>
 
               <div className="payment__method">
-                <h3 className="payment__method-title">Payment Method</h3>
+                <h3 className="payment__method-title">Способ оплаты</h3>
 
                 <div className="payment__card-container">
                   <div className="payment__card-header">
                     <CreditCard size={24} />
-                    <span>Credit/Debit Card</span>
+                    <span>Банковская карта</span>
                   </div>
                   <div className="payment__card-element">
                     <PaymentElement />
@@ -104,7 +104,7 @@ const PaymentPageContent = () => {
         </div>
       </div>
 
-      {/* Navigation Buttons */}
+      {/* Кнопки навигации */}
       <div className="payment__actions">
         <Button
           className="hover:bg-white-50/10"
@@ -112,7 +112,7 @@ const PaymentPageContent = () => {
           variant="outline"
           type="button"
         >
-          Switch Account
+          Сменить аккаунт
         </Button>
 
         <Button
@@ -121,7 +121,7 @@ const PaymentPageContent = () => {
           className="payment__submit"
           disabled={!stripe || !elements}
         >
-          Pay with Credit Card
+          Оплатить картой
         </Button>
       </div>
     </div>

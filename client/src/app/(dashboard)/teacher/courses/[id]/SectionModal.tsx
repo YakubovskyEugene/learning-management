@@ -67,7 +67,7 @@ const SectionModal = () => {
     }
 
     toast.success(
-      `Section added/updated successfully but you need to save the course to apply the changes`
+      `Секция успешно добавлена/обновлена, но для применения изменений необходимо сохранить курс`
     );
     onClose();
   };
@@ -76,7 +76,7 @@ const SectionModal = () => {
     <CustomModal isOpen={isSectionModalOpen} onClose={onClose}>
       <div className="section-modal">
         <div className="section-modal__header">
-          <h2 className="section-modal__title">Add/Edit Section</h2>
+          <h2 className="section-modal__title">Добавить/Редактировать секцию</h2>
           <button onClick={onClose} className="section-modal__close">
             <X className="w-6 h-6" />
           </button>
@@ -89,23 +89,23 @@ const SectionModal = () => {
           >
             <CustomFormField
               name="title"
-              label="Section Title"
-              placeholder="Write section title here"
+              label="Название секции"
+              placeholder="Введите название секции"
             />
 
             <CustomFormField
               name="description"
-              label="Section Description"
+              label="Описание секции"
               type="textarea"
-              placeholder="Write section description here"
+              placeholder="Введите описание секции"
             />
 
             <div className="section-modal__actions">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" className="bg-primary-700">
-                Save
+                Сохранить
               </Button>
             </div>
           </form>

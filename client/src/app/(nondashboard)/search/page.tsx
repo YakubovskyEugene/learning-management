@@ -27,7 +27,7 @@ const Search = () => {
   }, [courses, id]);
 
   if (isLoading) return <Loading />;
-  if (isError || !courses) return <div>Failed to fetch courses</div>;
+  if (isError || !courses) return <div>Не удалось получить список курсов</div>;
 
   const handleCourseSelect = (course: Course) => {
     setSelectedCourse(course);
@@ -49,8 +49,8 @@ const Search = () => {
       transition={{ duration: 0.5 }}
       className="search"
     >
-      <h1 className="search__title">List of available courses</h1>
-      <h2 className="search__subtitle">{courses.length} courses avaiable</h2>
+      <h1 className="search__title">Список доступных курсов</h1>
+      <h2 className="search__subtitle">{courses.length} курсов доступно</h2>
       <div className="search__content">
         <motion.div
           initial={{ y: 40, opacity: 0 }}

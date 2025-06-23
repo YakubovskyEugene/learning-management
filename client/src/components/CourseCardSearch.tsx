@@ -34,7 +34,7 @@ const CourseCardSearch = ({
           </p>
         </div>
         <div className="mt-2">
-          <p className="course-card-search__teacher">Автор {course.teacherName}</p>
+          <p className="course-card-search__teacher">Автор: {course.teacherName}</p>
           <div className="course-card-search__footer">
             <span className="course-card-search__price">
               {formatPrice(course.price)}

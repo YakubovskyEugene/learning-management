@@ -27,8 +27,8 @@ const CheckoutDetailsPage = () => {
   });
 
   if (isLoading) return <Loading />;
-  if (isError) return <div>Failed to fetch course data</div>;
-  if (!selectedCourse) return <div>Course not found</div>;
+  if (isError) return <div>Не удалось получить данные о курсе</div>;
+  if (!selectedCourse) return <div>Курс не найден</div>;
 
   return (
     <div className="checkout-details">
@@ -37,13 +37,13 @@ const CheckoutDetailsPage = () => {
           <CoursePreview course={selectedCourse} />
         </div>
 
-        {/* STRETCH FEATURE */}
+        {/* Дополнительная функция */}
         <div className="checkout-details__options">
           <div className="checkout-details__guest">
-            <h2 className="checkout-details__title">Guest Checkout</h2>
+            <h2 className="checkout-details__title">Покупка без регистрации</h2>
             <p className="checkout-details__subtitle">
-              Enter email to receive course access details and order
-              confirmation. You can create an account after purchase.
+              Введите email, чтобы получить доступ к курсу и подтверждение заказа.
+              После покупки вы сможете создать аккаунт.
             </p>
             <Form {...methods}>
               <form
@@ -54,14 +54,14 @@ const CheckoutDetailsPage = () => {
               >
                 <CustomFormField
                   name="email"
-                  label="Email address"
+                  label="Электронная почта"
                   type="email"
                   className="w-full rounded mt-4"
                   labelClassName="font-normal text-white-50"
                   inputClassName="py-3"
                 />
                 <Button type="submit" className="checkout-details__submit">
-                  Continue as Guest
+                  Продолжить как гость
                 </Button>
               </form>
             </Form>
@@ -69,7 +69,7 @@ const CheckoutDetailsPage = () => {
 
           <div className="checkout-details__divider">
             <hr className="checkout-details__divider-line" />
-            <span className="checkout-details__divider-text">Or</span>
+            <span className="checkout-details__divider-text">или</span>
             <hr className="checkout-details__divider-line" />
           </div>
 

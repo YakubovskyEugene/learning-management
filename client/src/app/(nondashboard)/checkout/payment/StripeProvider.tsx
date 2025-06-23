@@ -9,12 +9,15 @@ import { useCreateStripePaymentIntentMutation } from "@/state/api";
 import { useCurrentCourse } from "@/hooks/useCurrentCourse";
 import Loading from "@/components/Loading";
 
+// Проверка наличия публичного ключа Stripe
 if (!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) {
-  throw new Error("NEXT_PUBLIC_STRIPE_PUBLIC_KEY is not set");
+  throw new Error("NEXT_PUBLIC_STRIPE_PUBLIC_KEY не задан");
 }
 
+// Инициализация Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
+// Настройки внешнего вида Stripe Elements
 const appearance: Appearance = {
   theme: "stripe",
   variables: {
@@ -35,6 +38,7 @@ const StripeProvider = ({ children }: { children: React.ReactNode }) => {
   const [createStripePaymentIntent] = useCreateStripePaymentIntentMutation();
   const { course } = useCurrentCourse();
 
+  // Получение clientSecret для оплаты
   useEffect(() => {
     if (!course) return;
     const fetchPaymentIntent = async () => {
@@ -53,6 +57,7 @@ const StripeProvider = ({ children }: { children: React.ReactNode }) => {
     appearance,
   };
 
+  // Отображение загрузки, пока clientSecret не получен
   if (!clientSecret) return <Loading />;
 
   return (

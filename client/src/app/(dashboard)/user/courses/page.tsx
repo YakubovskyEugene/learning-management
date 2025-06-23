@@ -57,13 +57,13 @@ const Courses = () => {
   };
 
   if (!isLoaded || isLoading) return <Loading />;
-  if (!user) return <div>Please sign in to view your courses.</div>;
+  if (!user) return <div>Войдите в систему чтобы просмотреть ваши курсы.</div>;
   if (isError || !courses || courses.length === 0)
-    return <div>You are not enrolled in any courses yet.</div>;
+    return <div>Вы ещё не записаны ни на один курс.</div>;
 
   return (
     <div className="user-courses">
-      <Header title="My Courses" subtitle="View your enrolled courses" />
+      <Header title="Мои курсы" subtitle="Просмотрите ваши приобретенные курсы" />
       <Toolbar
         onSearch={setSearchTerm}
         onCategoryChange={setSelectedCategory}

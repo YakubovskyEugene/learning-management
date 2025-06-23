@@ -19,7 +19,7 @@ const CoursePreview = ({ course }: CoursePreviewProps) => {
         </div>
         <div>
           <h2 className="course-preview__title">{course.title}</h2>
-          <p className="text-gray-400 text-md mb-4">Автор {course.teacherName}</p>
+          <p className="text-gray-400 text-md mb-4">Автор: {course.teacherName}</p>
           <p className="text-sm text-customgreys-dirtyGrey">
             {course.description}
           </p>

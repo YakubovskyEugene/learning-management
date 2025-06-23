@@ -31,7 +31,7 @@ export default function DashboardLayout({
   }, [isCoursePage, pathname]);
 
   if (!isLoaded) return <Loading />;
-  if (!user) return <div>Please sign in to access this page.</div>;
+  if (!user) return <div>Войдите в систему для доступа к этой странице.</div>;
 
   return (
     <SidebarProvider>

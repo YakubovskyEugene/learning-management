@@ -49,7 +49,7 @@ const Courses = () => {
   };
 
   const handleDelete = async (course: Course) => {
-    if (window.confirm("Are you sure you want to delete this course?")) {
+    if (window.confirm("Вы уверены, что хотите удалить этот курс?")) {
       await deleteCourse(course.courseId).unwrap();
     }
   };
@@ -59,7 +59,7 @@ const Courses = () => {
 
     const result = await createCourse({
       teacherId: user.id,
-      teacherName: user.fullName || "Unknown Teacher",
+      teacherName: user.fullName || "Неизвестный преподаватель",
     }).unwrap();
     router.push(`/teacher/courses/${result.courseId}`, {
       scroll: false,
@@ -67,19 +67,19 @@ const Courses = () => {
   };
 
   if (isLoading) return <Loading />;
-  if (isError || !courses) return <div>Error loading courses.</div>;
+  if (isError || !courses) return <div>Ошибка загрузки курсов.</div>;
 
   return (
     <div className="teacher-courses">
       <Header
-        title="Courses"
-        subtitle="Browse your courses"
+        title="Курсы"
+        subtitle="Просмотрите ваши курсы"
         rightElement={
           <Button
             onClick={handleCreateCourse}
             className="teacher-courses__header"
           >
-            Create Course
+            Создать курс
           </Button>
         }
       />

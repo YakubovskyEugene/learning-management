@@ -34,8 +34,8 @@ const ChaptersSidebar = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isLoading) return <Loading />;
-  if (!user) return <div>Please sign in to view course progress.</div>;
-  if (!course || !userProgress) return <div>Error loading course content</div>;
+  if (!user) return <div>Войдите в систему чтобы просматривать прогресс курса.</div>;
+  if (!course || !userProgress) return <div>Ошибка загрузки содержимого курса</div>;
 
   const toggleSection = (sectionTitle: string) => {
     setExpandedSections((prevSections) =>
@@ -115,7 +115,7 @@ const Section = ({
       >
         <div className="chapters-sidebar__section-title-wrapper">
           <p className="chapters-sidebar__section-number">
-            Section 0{index + 1}
+            Секция 0{index + 1}
           </p>
           {isExpanded ? (
             <ChevronUp className="chapters-sidebar__chevron" />
@@ -187,7 +187,7 @@ const ProgressVisuals = ({
         </div>
       </div>
       <p className="chapters-sidebar__progress-text">
-        {completedChapters}/{totalChapters} COMPLETED
+        {completedChapters}/{totalChapters} ЗАВЕРШЕНО
       </p>
     </>
   );
@@ -277,7 +277,7 @@ const Chapter = ({
         <div
           className="chapters-sidebar__chapter-check"
           onClick={handleToggleComplete}
-          title="Toggle completion status"
+          title="Изменить статус завершения"
         >
           <CheckCircle className="chapters-sidebar__check-icon" />
         </div>

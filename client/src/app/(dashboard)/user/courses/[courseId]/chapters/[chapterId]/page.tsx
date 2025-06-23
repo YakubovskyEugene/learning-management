@@ -44,8 +44,8 @@ const Course = () => {
   };
 
   if (isLoading) return <Loading />;
-  if (!user) return <div>Please sign in to view this course.</div>;
-  if (!course || !userProgress) return <div>Error loading course</div>;
+  if (!user) return <div>Войдите в систему чтобы просмотреть этот курс.</div>;
+  if (!course || !userProgress) return <div>Ошибка загрузки курса</div>;
 
   return (
     <div className="course">
@@ -93,7 +93,7 @@ const Course = () => {
               />
             ) : (
               <div className="course__no-video">
-                No video available for this chapter.
+                Видео для этой главы отсутствует.
               </div>
             )}
           </CardContent>
@@ -103,20 +103,20 @@ const Course = () => {
           <Tabs defaultValue="Notes" className="course__tabs">
             <TabsList className="course__tabs-list">
               <TabsTrigger className="course__tab" value="Notes">
-                Notes
+                Заметки
               </TabsTrigger>
               <TabsTrigger className="course__tab" value="Resources">
-                Resources
+                Ресурсы
               </TabsTrigger>
               <TabsTrigger className="course__tab" value="Quiz">
-                Quiz
+                Тест
               </TabsTrigger>
             </TabsList>
 
             <TabsContent className="course__tab-content" value="Notes">
               <Card className="course__tab-card">
                 <CardHeader className="course__tab-header">
-                  <CardTitle>Notes Content</CardTitle>
+                  <CardTitle>Содержимое заметок</CardTitle>
                 </CardHeader>
                 <CardContent className="course__tab-body">
                   {currentChapter?.content}
@@ -127,10 +127,10 @@ const Course = () => {
             <TabsContent className="course__tab-content" value="Resources">
               <Card className="course__tab-card">
                 <CardHeader className="course__tab-header">
-                  <CardTitle>Resources Content</CardTitle>
+                  <CardTitle>Содержимое ресурсов</CardTitle>
                 </CardHeader>
                 <CardContent className="course__tab-body">
-                  {/* Add resources content here */}
+                  {/* Добавьте содержимое ресурсов здесь */}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -138,10 +138,10 @@ const Course = () => {
             <TabsContent className="course__tab-content" value="Quiz">
               <Card className="course__tab-card">
                 <CardHeader className="course__tab-header">
-                  <CardTitle>Quiz Content</CardTitle>
+                  <CardTitle>Содержимое теста</CardTitle>
                 </CardHeader>
                 <CardContent className="course__tab-body">
-                  {/* Add quiz content here */}
+                  {/* Добавьте содержимое теста здесь */}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -160,14 +160,12 @@ const Course = () => {
                   <h4 className="course__instructor-name">
                     {course.teacherName}
                   </h4>
-                  <p className="course__instructor-title">Senior UX Designer</p>
+                  <p className="course__instructor-title">Старший UX-дизайнер</p>
                 </div>
               </div>
               <div className="course__instructor-bio">
                 <p>
-                  A seasoned Senior UX Designer with over 15 years of experience
-                  in creating intuitive and engaging digital experiences.
-                  Expertise in leading UX design projects.
+                  Опытный старший UX-дизайнер с более чем 15-летним стажем в создании интуитивно понятных и привлекательных цифровых продуктов. Эксперт в управлении проектами по UX-дизайну.
                 </p>
               </div>
             </CardContent>

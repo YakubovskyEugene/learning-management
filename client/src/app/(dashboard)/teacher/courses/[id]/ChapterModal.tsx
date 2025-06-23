@@ -92,7 +92,7 @@ const ChapterModal = () => {
     }
 
     toast.success(
-      `Chapter added/updated successfully but you need to save the course to apply the changes`
+      `Глава успешно добавлена/обновлена, но для применения изменений необходимо сохранить курс`
     );
     onClose();
   };
@@ -101,7 +101,7 @@ const ChapterModal = () => {
     <CustomModal isOpen={isChapterModalOpen} onClose={onClose}>
       <div className="chapter-modal">
         <div className="chapter-modal__header">
-          <h2 className="chapter-modal__title">Add/Edit Chapter</h2>
+          <h2 className="chapter-modal__title">Добавить/Изменить главу</h2>
           <button onClick={onClose} className="chapter-modal__close">
             <X className="w-6 h-6" />
           </button>
@@ -131,7 +131,7 @@ const ChapterModal = () => {
               render={({ field: { onChange, value } }) => (
                 <FormItem>
                   <FormLabel className="text-customgreys-dirtyGrey text-sm">
-                    Chapter Video
+                    Глава с видео
                   </FormLabel>
                   <FormControl>
                     <div>
@@ -148,12 +148,12 @@ const ChapterModal = () => {
                       />
                       {typeof value === "string" && value && (
                         <div className="my-2 text-sm text-gray-600">
-                          Current video: {value.split("/").pop()}
+                          Текущее видео: {value.split("/").pop()}
                         </div>
                       )}
                       {value instanceof File && (
                         <div className="my-2 text-sm text-gray-600">
-                          Selected file: {value.name}
+                          Выбранный файл: {value.name}
                         </div>
                       )}
                     </div>
@@ -168,7 +168,7 @@ const ChapterModal = () => {
                 Cancel
               </Button>
               <Button type="submit" className="bg-primary-700">
-                Save
+                сохранить
               </Button>
             </div>
           </form>

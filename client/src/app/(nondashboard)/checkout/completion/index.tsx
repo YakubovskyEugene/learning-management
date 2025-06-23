@@ -12,23 +12,23 @@ const CompletionPage = () => {
         <div className="completion__icon">
           <Check className="w-16 h-16" />
         </div>
-        <h1 className="completion__title">COMPLETED</h1>
+        <h1 className="completion__title">ЗАВЕРШЕНО</h1>
         <p className="completion__message">
-          🎉 You have made a course purchase successfully! 🎉
+          🎉 Вы успешно приобрели курс! 🎉
         </p>
       </div>
       <div className="completion__support">
         <p>
-          Need help? Contact our{" "}
+          Нужна помощь? Свяжитесь с нашей{" "}
           <Button variant="link" asChild className="p-0 m-0 text-primary-700">
-            <a href="mailto:support@example.com">customer support</a>
+            <a href="mailto:support@example.com">службой поддержки</a>
           </Button>
           .
         </p>
       </div>
       <div className="completion__action">
         <Link href="user/courses" scroll={false}>
-          Go to Courses
+          Перейти к курсам
         </Link>
       </div>
     </div>
