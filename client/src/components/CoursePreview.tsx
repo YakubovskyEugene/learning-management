@@ -8,13 +8,14 @@ const CoursePreview = ({ course }: CoursePreviewProps) => {
   return (
     <div className="course-preview">
       <div className="course-preview__container">
-        <div className="course-preview__image-wrapper">
+        <div className="course-preview__image-wrapper flex justify-center">
           <Image
             src={course.image || "/placeholder.png"}
             alt="Course Preview"
-            width={640}
-            height={360}
-            className="w-full"
+            width={320}
+            height={180}
+            className="rounded-lg object-cover w-full max-w-[320px] h-auto"
+            // Ограничиваем ширину и делаем картинку аккуратной
           />
         </div>
         <div>
