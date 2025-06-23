@@ -36,14 +36,12 @@ const AppSidebar = () => {
       { icon: BookOpen, label: "Курсы", href: "/user/courses" },
       { icon: Briefcase, label: "Платежи", href: "/user/billing" },
       { icon: User, label: "Профиль", href: "/user/profile" },
-      { icon: Settings, label: "Настройки", href: "/user/settings" },
     ],
     teacher: [
       { icon: BookOpen, label: "Курсы", href: "/teacher/courses" },
       { icon: DollarSign, label: "Платежи", href: "/teacher/billing" },
       { icon: User, label: "Профиль", href: "/teacher/profile" },
-      { icon: Settings, label: "Настройки", href: "/teacher/settings" },
-    ],
+     ],
   };
 
   if (!isLoaded) return <Loading />;
