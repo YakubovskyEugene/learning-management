@@ -18,13 +18,29 @@ const CheckoutDetailsPage = () => {
   if (!selectedCourse) return <div>Курс не найден</div>;
 
   return (
-    <div className="checkout-details">
-      <div className="checkout-details__container">
-        <div className="checkout-details__preview">
+    <div className="checkout-details min-h-screen flex items-center justify-center px-2 py-6">
+      <div
+        className="
+          checkout-details__container
+          flex flex-col md:flex-row gap-6 w-full max-w-5xl
+          md:items-start items-stretch
+        "
+      >
+        <div className="checkout-details__preview w-full md:w-1/2">
           <CoursePreview course={selectedCourse} />
         </div>
-        <div className="checkout-details__auth max-w-[400px] mx-auto w-full min-w-[320px]">
-          {showSignUp ? <SignUpComponent /> : <SignInComponent />}
+        <div
+          className="
+            checkout-details__auth
+            w-full md:w-1/2
+            max-w-[400px] mx-auto md:mx-0
+            min-w-[0] md:min-w-[320px]
+            flex items-center
+          "
+        >
+          <div className="w-full">
+            {showSignUp ? <SignUpComponent /> : <SignInComponent />}
+          </div>
         </div>
       </div>
     </div>
