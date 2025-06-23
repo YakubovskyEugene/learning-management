@@ -30,9 +30,9 @@ const WizardStepper = ({ currentStep }: WizardStepperProps) => {
                   "wizard-stepper__text--inactive": currentStep < step,
                 })}
               >
-                {step === 1 && "Details"}
-                {step === 2 && "Payment"}
-                {step === 3 && "Completion"}
+                {step === 1 && "Детали"}
+                {step === 2 && "Оплата"}
+                {step === 3 && "Завершение"}
               </p>
             </div>
             {index < 2 && (
