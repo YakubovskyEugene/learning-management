@@ -5,6 +5,7 @@ import Providers from "./providers";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { Suspense } from "react";
+import { ruRU } from "@clerk/localizations"; // Импорт русской локализации Clerk
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -23,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider localization={ruRU}>
       <html lang="ru">
         <body className={`${dmSans.className}`}>
           <Providers>
