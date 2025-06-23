@@ -33,16 +33,16 @@ const AppSidebar = () => {
 
   const navLinks = {
     student: [
-      { icon: BookOpen, label: "Courses", href: "/user/courses" },
-      { icon: Briefcase, label: "Billing", href: "/user/billing" },
-      { icon: User, label: "Profile", href: "/user/profile" },
-      { icon: Settings, label: "Settings", href: "/user/settings" },
+      { icon: BookOpen, label: "Курсы", href: "/user/courses" },
+      { icon: Briefcase, label: "Платежи", href: "/user/billing" },
+      { icon: User, label: "Профиль", href: "/user/profile" },
+      { icon: Settings, label: "Настройки", href: "/user/settings" },
     ],
     teacher: [
-      { icon: BookOpen, label: "Courses", href: "/teacher/courses" },
-      { icon: DollarSign, label: "Billing", href: "/teacher/billing" },
-      { icon: User, label: "Profile", href: "/teacher/profile" },
-      { icon: Settings, label: "Settings", href: "/teacher/settings" },
+      { icon: BookOpen, label: "Курсы", href: "/teacher/courses" },
+      { icon: DollarSign, label: "Платежи", href: "/teacher/billing" },
+      { icon: User, label: "Профиль", href: "/teacher/profile" },
+      { icon: Settings, label: "Настройки", href: "/teacher/settings" },
     ],
   };
 
