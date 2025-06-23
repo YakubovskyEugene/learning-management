@@ -23,7 +23,7 @@ const CheckoutDetailsPage = () => {
         <div className="checkout-details__preview">
           <CoursePreview course={selectedCourse} />
         </div>
-        <div className="checkout-details__auth">
+        <div className="checkout-details__auth max-w-[400px] mx-auto w-full min-w-[320px]">
           {showSignUp ? <SignUpComponent /> : <SignInComponent />}
         </div>
       </div>
