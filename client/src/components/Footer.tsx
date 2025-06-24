@@ -1,20 +1,27 @@
-import Link from "next/link";
 import React from "react";
+
+const footerLinks = [
+  { label: "О нас", href: "https://elearningindustry.com/about-us" },
+  { label: "Политика конфиденциальности", href: "https://elearningindustry.com/legal/privacy-policy" },
+  { label: "Лицензирование", href: "https://elearningindustry.com/directory/software-categories/learning-management-systems/license/free" },
+  { label: "Контакты", href: "https://elearningindustry.com/contact-us" },
+];
 
 const Footer = () => {
   return (
     <div className="footer">
       <p>&copy; 2025 MyLMS. Все права защищены.</p>
       <div className="footer__links">
-        {["О нас", "Политика конфиденциальности", "Лицензирование", "Контакты"].map((item) => (
-          <Link
-            key={item}
-            href={`/${item.toLowerCase().replace(" ", "-")}`}
+        {footerLinks.map((item) => (
+          <a
+            key={item.label}
+            href={item.href}
             className="footer__link"
-            scroll={false}
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            {item}
-          </Link>
+            {item.label}
+          </a>
         ))}
       </div>
     </div>
