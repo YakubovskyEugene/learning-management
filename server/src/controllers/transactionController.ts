@@ -110,6 +110,9 @@ export const createTransaction = async (
       }
     }
 
+    // ЛОГ перед сохранением транзакции:
+    console.log("Сохраняем транзакцию с provider:", provider);
+
     // 3. Создать запись о транзакции
     const newTransaction = new Transaction({
       dateTime: new Date().toISOString(),

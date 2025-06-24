@@ -26,7 +26,6 @@ const transactionSchema = new Schema(
     },
     paymentProvider: {
       type: String,
-      enum: ["stripe"],
       required: true,
     },
     amount: Number,

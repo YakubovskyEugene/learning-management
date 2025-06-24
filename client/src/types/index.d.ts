@@ -57,7 +57,7 @@ declare global {
     transactionId: string;
     dateTime: string;
     courseId: string;
-    paymentProvider: "visa" | "mastercard" | string;
+    paymentProvider: string;
     paymentMethodId?: string;
     amount: number; // Stored in cents
     savePaymentMethod?: boolean;
