@@ -21,7 +21,7 @@ const CompletionPage = () => {
         <p>
           Нужна помощь? Свяжитесь с нашей{" "}
           <Button variant="link" asChild className="p-0 m-0 text-primary-700">
-            <a href="mailto:support@example.com">службой поддержки</a>
+            <a href="https://elearningindustry.com/support"> поддержки</a>
           </Button>
           .
         </p>

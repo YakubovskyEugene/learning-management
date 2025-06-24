@@ -81,18 +81,47 @@ export const createTransaction = async (
     // 1. Получить информацию о курсе
     const course = await Course.get(courseId);
 
-    // 2. Создать запись о транзакции
+    // 2. Получить тип карты из Stripe, если это Stripe-платёж
+    let provider = paymentProvider;
+    if (paymentProvider === "stripe" && transactionId) {
+      try {
+        // ВАЖНО: добавьте "charges" в expand!
+        const paymentIntent: any = await stripe.paymentIntents.retrieve(transactionId, {
+          expand: ["charges", "charges.data.payment_method_details.card"],
+        });
+
+        if (
+          paymentIntent &&
+          paymentIntent.charges &&
+          paymentIntent.charges.data &&
+          paymentIntent.charges.data.length > 0
+        ) {
+          const charge = paymentIntent.charges.data[0];
+          if (
+            charge.payment_method_details &&
+            charge.payment_method_details.card &&
+            charge.payment_method_details.card.brand
+          ) {
+            provider = charge.payment_method_details.card.brand; // visa, mastercard, etc.
+          }
+        }
+      } catch (stripeErr) {
+        console.error("Ошибка при получении типа карты Stripe:", stripeErr);
+      }
+    }
+
+    // 3. Создать запись о транзакции
     const newTransaction = new Transaction({
       dateTime: new Date().toISOString(),
       userId,
       courseId,
       transactionId,
       amount,
-      paymentProvider,
+      paymentProvider: provider,
     });
     await newTransaction.save();
 
-    // 3. Создать начальный прогресс по курсу
+    // 4. Создать начальный прогресс по курсу
     const initialProgress = new UserCourseProgress({
       userId,
       courseId,
@@ -109,7 +138,7 @@ export const createTransaction = async (
     });
     await initialProgress.save();
 
-    // 4. Добавить пользователя в список записавшихся на курс
+    // 5. Добавить пользователя в список записавшихся на курс
     await Course.update(
       { courseId },
       {
