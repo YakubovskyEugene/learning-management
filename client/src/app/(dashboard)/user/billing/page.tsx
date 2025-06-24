@@ -21,6 +21,18 @@ import { useGetTransactionsQuery } from "@/state/api";
 import { useUser } from "@clerk/nextjs";
 import React, { useState } from "react";
 
+// Список поддерживаемых карт для фильтра и отображения
+const CARD_TYPES = ["visa", "mastercard", "amex", "discover", "jcb", "diners"];
+
+const CARD_LABELS: Record<string, string> = {
+  visa: "Visa",
+  mastercard: "Mastercard",
+  amex: "American Express",
+  discover: "Discover",
+  jcb: "JCB",
+  diners: "Diners Club",
+};
+
 const UserBilling = () => {
   const [paymentType, setPaymentType] = useState("all");
   const { user, isLoaded } = useUser();
@@ -29,11 +41,19 @@ const UserBilling = () => {
       skip: !isLoaded || !user,
     });
 
+  // Фильтруем только транзакции по картам
+  const cardTransactions =
+    transactions?.filter((transaction) =>
+      CARD_TYPES.includes(transaction.paymentProvider)
+    ) || [];
+
+  // Фильтрация по типу карты
   const filteredData =
-    transactions?.filter((transaction) => {
-      const matchesTypes =
-        paymentType === "all" || transaction.paymentProvider === paymentType;
-      return matchesTypes;
+    cardTransactions.filter((transaction) => {
+      return (
+        paymentType === "all" ||
+        transaction.paymentProvider === paymentType
+      );
     }) || [];
 
   if (!isLoaded) return <Loading />;
@@ -46,20 +66,21 @@ const UserBilling = () => {
         <div className="billing__filters">
           <Select value={paymentType} onValueChange={setPaymentType}>
             <SelectTrigger className="billing__select">
-              <SelectValue placeholder="Тип платежа" />
+              <SelectValue placeholder="Тип карты" />
             </SelectTrigger>
-
             <SelectContent className="billing__select-content">
               <SelectItem className="billing__select-item" value="all">
-                Все типы
+                Все карты
               </SelectItem>
-              <SelectItem className="billing__select-item" value="visa">
-                Visa
-              </SelectItem>
-              <SelectItem className="billing__select-item" value="mastercard">
-                Mastercard
-              </SelectItem>
-              {/* Если нужно добавить другие типы карт, добавьте их здесь */}
+              {CARD_TYPES.map((type) => (
+                <SelectItem
+                  className="billing__select-item"
+                  value={type}
+                  key={type}
+                >
+                  {CARD_LABELS[type] || type}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -74,7 +95,7 @@ const UserBilling = () => {
                   <TableHead className="billing__table-cell">Дата</TableHead>
                   <TableHead className="billing__table-cell">Сумма</TableHead>
                   <TableHead className="billing__table-cell">
-                    Способ оплаты
+                    Тип карты
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -92,13 +113,8 @@ const UserBilling = () => {
                         {formatPrice(transaction.amount)}
                       </TableCell>
                       <TableCell className="billing__table-cell">
-                        {transaction.paymentProvider === "visa"
-                          ? "Visa"
-                          : transaction.paymentProvider === "mastercard"
-                          ? "Mastercard"
-                          : transaction.paymentProvider === "stripe"
-                          ? "Stripe"
-                          : transaction.paymentProvider}
+                        {CARD_LABELS[transaction.paymentProvider] ||
+                          transaction.paymentProvider}
                       </TableCell>
                     </TableRow>
                   ))
@@ -108,7 +124,7 @@ const UserBilling = () => {
                       className="billing__table-cell text-center"
                       colSpan={3}
                     >
-                      Нет транзакций для отображения
+                      Нет транзакций по картам для отображения
                     </TableCell>
                   </TableRow>
                 )}
