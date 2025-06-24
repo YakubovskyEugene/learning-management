@@ -53,12 +53,13 @@ const UserBilling = () => {
               <SelectItem className="billing__select-item" value="all">
                 Все типы
               </SelectItem>
-              <SelectItem className="billing__select-item" value="stripe">
-                Stripe
+              <SelectItem className="billing__select-item" value="visa">
+                Visa
               </SelectItem>
-              <SelectItem className="billing__select-item" value="paypal">
-                Paypal
+              <SelectItem className="billing__select-item" value="mastercard">
+                Mastercard
               </SelectItem>
+              {/* Если нужно добавить другие типы карт, добавьте их здесь */}
             </SelectContent>
           </Select>
         </div>
@@ -91,10 +92,12 @@ const UserBilling = () => {
                         {formatPrice(transaction.amount)}
                       </TableCell>
                       <TableCell className="billing__table-cell">
-                        {transaction.paymentProvider === "stripe"
+                        {transaction.paymentProvider === "visa"
+                          ? "Visa"
+                          : transaction.paymentProvider === "mastercard"
+                          ? "Mastercard"
+                          : transaction.paymentProvider === "stripe"
                           ? "Stripe"
-                          : transaction.paymentProvider === "paypal"
-                          ? "Paypal"
                           : transaction.paymentProvider}
                       </TableCell>
                     </TableRow>
