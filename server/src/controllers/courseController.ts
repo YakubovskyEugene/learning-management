@@ -15,25 +15,24 @@ export const listCourses = async (
 
   try {
     let courses;
-    if (category && category !== "all") {
-      courses = await Course.scan("category")
-        .eq(category)
-        .where("status")
-        .eq("Published") // Фильтр по опубликованным курсам
-        .exec();
-    } else {
-      courses = await Course.scan()
-        .where("status")
-        .eq("Published") // Фильтр по опубликованным курсам
-        .exec();
-    }
-
-    // Если пользователь — преподаватель, показываем его черновики
-    if (userId) {
-      const teacherCourses = await Course.scan("teacherId")
+    if (req.path === "/teacher/courses" && userId) {
+      // Для страницы преподавателя возвращаем все его курсы, включая черновики
+      courses = await Course.scan("teacherId")
         .eq(userId)
         .exec();
-      courses = [...courses, ...teacherCourses];
+    } else {
+      // Для всех остальных запросов (например, студентов) возвращаем только опубликованные курсы
+      courses =
+        category && category !== "all"
+          ? await Course.scan("category")
+              .eq(category)
+              .where("status")
+              .eq("Published")
+              .exec()
+          : await Course.scan()
+              .where("status")
+              .eq("Published")
+              .exec();
     }
 
     res.json({ message: "Курсы успешно получены", data: courses });
