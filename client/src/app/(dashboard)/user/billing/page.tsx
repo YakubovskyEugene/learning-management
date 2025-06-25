@@ -21,46 +21,23 @@ import { useGetTransactionsQuery } from "@/state/api";
 import { useUser } from "@clerk/nextjs";
 import React, { useState } from "react";
 
-// Список поддерживаемых карт для фильтра и отображения, включая "неизвестно"
-const CARD_TYPES = ["visa", "mastercard", "amex", "discover", "jcb", "diners", "unknown"];
-
-const CARD_LABELS: Record<string, string> = {
-  visa: "Visa",
-  mastercard: "Mastercard",
-  amex: "American Express",
-  discover: "Discover",
-  jcb: "JCB",
-  diners: "Diners Club",
-  unknown: "Неизвестно", // Добавили соответствие для "неизвестно"
-};
-
 const UserBilling = () => {
   const [paymentType, setPaymentType] = useState("all");
   const { user, isLoaded } = useUser();
-  const { data: transactions, isLoading: isLoadingTransactions, error } = useGetTransactionsQuery(
-    { userId: user?.id || "", cardBrand: paymentType === "all" ? undefined : paymentType },
-    { skip: !isLoaded || !user }
-  );
+  const { data: transactions, isLoading: isLoadingTransactions } =
+    useGetTransactionsQuery(user?.id || "", {
+      skip: !isLoaded || !user,
+    });
 
-  // Фильтруем только транзакции по картам, включая "неизвестно"
-  const cardTransactions =
-    transactions?.filter((transaction) =>
-      CARD_TYPES.includes(transaction.cardBrand?.toLowerCase() || "unknown")
-    ) || [];
-
-  // Фильтрация по типу карты (cardBrand)
   const filteredData =
-    cardTransactions.filter((transaction) => {
-      const transactionCardBrand = transaction.cardBrand?.toLowerCase() || "unknown";
-      return (
-        paymentType === "all" ||
-        transactionCardBrand === paymentType
-      );
+    transactions?.filter((transaction) => {
+      const matchesTypes =
+        paymentType === "all" || transaction.paymentProvider === paymentType;
+      return matchesTypes;
     }) || [];
 
   if (!isLoaded) return <Loading />;
-  if (!user) return <div>Войдите в систему чтобы просмотреть информацию о платежах.</div>;
-  if (error) return <div>Ошибка при загрузке транзакций: {error.toString()}</div>;
+  if (!user) return <div>Войдите в систему чтобы посмотреть историю платежей.</div>;
 
   return (
     <div className="billing">
@@ -69,21 +46,19 @@ const UserBilling = () => {
         <div className="billing__filters">
           <Select value={paymentType} onValueChange={setPaymentType}>
             <SelectTrigger className="billing__select">
-              <SelectValue placeholder="Тип карты" />
+              <SelectValue placeholder="Тип платежа" />
             </SelectTrigger>
+
             <SelectContent className="billing__select-content">
               <SelectItem className="billing__select-item" value="all">
-                Все карты
+                Все типы
               </SelectItem>
-              {CARD_TYPES.map((type) => (
-                <SelectItem
-                  className="billing__select-item"
-                  value={type}
-                  key={type}
-                >
-                  {CARD_LABELS[type] || type}
-                </SelectItem>
-              ))}
+              <SelectItem className="billing__select-item" value="stripe">
+                Stripe
+              </SelectItem>
+              <SelectItem className="billing__select-item" value="paypal">
+                Paypal
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -97,7 +72,9 @@ const UserBilling = () => {
                 <TableRow className="billing__table-header-row">
                   <TableHead className="billing__table-cell">Дата</TableHead>
                   <TableHead className="billing__table-cell">Сумма</TableHead>
-                  <TableHead className="billing__table-cell">Тип карты</TableHead>
+                  <TableHead className="billing__table-cell">
+                    Способ оплаты
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="billing__table-body">
@@ -114,8 +91,7 @@ const UserBilling = () => {
                         {formatPrice(transaction.amount)}
                       </TableCell>
                       <TableCell className="billing__table-cell">
-                        {CARD_LABELS[transaction.cardBrand?.toLowerCase() || "unknown"] ||
-                          transaction.cardBrand}
+                        {transaction.paymentProvider}
                       </TableCell>
                     </TableRow>
                   ))
@@ -125,7 +101,7 @@ const UserBilling = () => {
                       className="billing__table-cell text-center"
                       colSpan={3}
                     >
-                      Нет транзакций по картам для отображения
+                      Нет транзакций для отображения
                     </TableCell>
                   </TableRow>
                 )}

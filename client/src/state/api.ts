@@ -23,23 +23,13 @@ const customBaseQuery = async (
   try {
     const result: any = await baseQuery(args, api, extraOptions);
 
-    // Определяем, является ли запрос запросом на получение курсов
-    const isCoursesQuery =
-      args === "courses" ||
-      args.toString().includes("courses") ||
-      args.toString().includes("users/course-progress");
-    const isError = result.error;
-
-    if (isError) {
+    if (result.error) {
       const errorData = result.error.data;
-      const errorStatus = result.error.status;
       const errorMessage =
-        errorData?.message || errorStatus.toString() || "Произошла ошибка";
-
-      // Показываем toast только если это не запрос курсов
-      if (!isCoursesQuery) {
-        toast.error(`Ошибка: ${errorMessage}`);
-      }
+        errorData?.message ||
+        result.error.status.toString() ||
+        "Произошла ошибка";
+      toast.error(`Ошибка: ${errorMessage}`);
     }
 
     const isMutationRequest =
@@ -64,14 +54,6 @@ const customBaseQuery = async (
     const errorMessage =
       error instanceof Error ? error.message : "Неизвестная ошибка";
 
-    // Показываем toast только если это не связано с курсами
-    if (
-      !args.toString().includes("courses") &&
-      !args.toString().includes("users/course-progress")
-    ) {
-      toast.error(`Ошибка: ${errorMessage}`);
-    }
-
     return { error: { status: "FETCH_ERROR", error: errorMessage } };
   }
 };
@@ -79,7 +61,7 @@ const customBaseQuery = async (
 export const api = createApi({
   baseQuery: customBaseQuery,
   reducerPath: "api",
-  tagTypes: ["Courses", "Users", "UserCourseProgress", "Transactions"],
+  tagTypes: ["Courses", "Users", "UserCourseProgress"],
   endpoints: (build) => ({
     /* 
     ===============
@@ -169,28 +151,9 @@ export const api = createApi({
     ТРАНЗАКЦИИ
     =============== 
     */
-    getTransactions: build.query<
-      Transaction[],
-      { userId: string; cardBrand?: string }
-    >({
-      query: ({ userId, cardBrand }) => {
-        const params = new URLSearchParams({ userId });
-        if (cardBrand && cardBrand !== "all") {
-          params.append("cardBrand", cardBrand);
-        }
-        return `transactions?${params.toString()}`;
-      },
-      providesTags: ["Transactions"],
+    getTransactions: build.query<Transaction[], string>({
+      query: (userId) => `transactions?userId=${userId}`,
     }),
-
-    createTransaction: build.mutation<Transaction, Partial<Transaction>>({
-      query: (transaction) => ({
-        url: "transactions",
-        method: "POST",
-        body: transaction,
-      }),
-    }),
-
     createStripePaymentIntent: build.mutation<
       { clientSecret: string },
       { amount: number }
@@ -201,6 +164,14 @@ export const api = createApi({
         body: { amount },
       }),
     }),
+    createTransaction: build.mutation<Transaction, Partial<Transaction>>({
+      query: (transaction) => ({
+        url: "transactions",
+        method: "POST",
+        body: transaction,
+      }),
+    }),
+
     /* 
     ===============
     ПРОГРЕСС ПОЛЬЗОВАТЕЛЯ В КУРСАХ

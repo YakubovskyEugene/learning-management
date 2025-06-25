@@ -52,17 +52,16 @@ declare global {
     }>;
   }
 
-interface Transaction {
-  userId: string;
-  transactionId: string;
-  dateTime: string;
-  courseId: string;
-  paymentProvider: string;
-  cardBrand?: string; // Добавлено
-  paymentMethodId?: string;
-  amount: number;
-  savePaymentMethod?: boolean;
-}
+  interface Transaction {
+    userId: string;
+    transactionId: string;
+    dateTime: string;
+    courseId: string;
+    paymentProvider: string;
+    paymentMethodId?: string;
+    amount: number; // Stored in cents
+    savePaymentMethod?: boolean;
+  }
 
   interface DateRange {
     from: string | undefined;
