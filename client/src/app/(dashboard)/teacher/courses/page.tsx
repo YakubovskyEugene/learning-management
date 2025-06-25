@@ -13,8 +13,8 @@ import {
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
-import CourseCreateModal from "./CourseCreateModal"; // Новый импорт
-import { CourseFormData } from "@/types"; // Импорт типа
+import CourseCreateModal from "./CourseCreateModal";
+import { CourseFormData } from "@/types";
 
 const Courses = () => {
   const router = useRouter();
@@ -23,14 +23,14 @@ const Courses = () => {
     data: courses,
     isLoading,
     isError,
-  } = useGetCoursesQuery({ category: "all" });
+  } = useGetCoursesQuery({ category: "all", teacherView: true }); // Добавлен teacherView
 
   const [createCourse] = useCreateCourseMutation();
   const [deleteCourse] = useDeleteCourseMutation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // Новое состояние
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const filteredCourses = useMemo(() => {
     if (!courses) return [];
@@ -66,8 +66,8 @@ const Courses = () => {
         title: data.courseTitle,
         description: data.courseDescription,
         category: data.courseCategory,
-        price: parseInt(data.coursePrice) * 100, // Конвертация в центы
-        level: "Beginner", // Можно добавить выбор уровня в форму позже
+        price: parseInt(data.coursePrice) * 100,
+        level: "Beginner",
         status: data.courseStatus ? "Published" : "Draft",
         sections: [],
         enrollments: [],

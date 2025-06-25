@@ -10,18 +10,18 @@ export const listCourses = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { category } = req.query;
+  const { category, teacherView } = req.query;
   const { userId } = getAuth(req);
 
   try {
     let courses;
-    if (req.path === "/teacher/courses" && userId) {
-      // Для страницы преподавателя возвращаем все его курсы, включая черновики
+    if (teacherView && userId) {
+      // Возвращаем все курсы преподавателя, включая черновики, если teacherView=true
       courses = await Course.scan("teacherId")
         .eq(userId)
         .exec();
     } else {
-      // Для всех остальных запросов (например, студентов) возвращаем только опубликованные курсы
+      // Для всех остальных случаев (например, студентов) возвращаем только опубликованные курсы
       courses =
         category && category !== "all"
           ? await Course.scan("category")

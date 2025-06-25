@@ -89,13 +89,13 @@ export const api = createApi({
     КУРСЫ
     =============== 
     */
-    getCourses: build.query<Course[], { category?: string }>({
-      query: ({ category }) => ({
-        url: "courses",
-        params: { category },
-      }),
-      providesTags: ["Courses"],
-    }),
+    getCourses: build.query<Course[], { category?: string; teacherView?: boolean }>({
+  query: ({ category, teacherView }) => ({
+    url: "courses",
+    params: { category, teacherView },
+  }),
+  providesTags: ["Courses"],
+}),
 
     getCourse: build.query<Course, string>({
       query: (id) => `courses/${id}`,
