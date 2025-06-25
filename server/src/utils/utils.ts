@@ -1,5 +1,6 @@
 import path from "path";
 
+// Обновить информацию о видео в курсе
 export const updateCourseVideoInfo = (
   course: any,
   sectionId: string,
@@ -8,28 +9,30 @@ export const updateCourseVideoInfo = (
 ) => {
   const section = course.sections?.find((s: any) => s.sectionId === sectionId);
   if (!section) {
-    throw new Error(`Section not found: ${sectionId}`);
+    throw new Error(`Секция не найдена: ${sectionId}`); 
   }
 
   const chapter = section.chapters?.find((c: any) => c.chapterId === chapterId);
   if (!chapter) {
-    throw new Error(`Chapter not found: ${chapterId}`);
+    throw new Error(`Глава не найдена: ${chapterId}`); 
   }
 
   chapter.video = videoUrl;
   chapter.type = "Video";
 };
 
+// Проверка загружаемых файлов
 export const validateUploadedFiles = (files: any) => {
   const allowedExtensions = [".mp4", ".m3u8", ".mpd", ".ts", ".m4s"];
   for (const file of files) {
     const ext = path.extname(file.originalname).toLowerCase();
     if (!allowedExtensions.includes(ext)) {
-      throw new Error(`Unsupported file type: ${ext}`);
+      throw new Error(`Неподдерживаемый тип файла: ${ext}`); 
     }
   }
 };
 
+// Получить Content-Type по расширению файла
 export const getContentType = (filename: string) => {
   const ext = path.extname(filename).toLowerCase();
   switch (ext) {
@@ -48,7 +51,7 @@ export const getContentType = (filename: string) => {
   }
 };
 
-// Preserved HLS/DASH upload logic for future use
+// Логика загрузки HLS/DASH (зарезервировано для будущего)
 export const handleAdvancedVideoUpload = async (
   s3: any,
   files: any,
@@ -61,7 +64,7 @@ export const handleAdvancedVideoUpload = async (
   );
 
   if (isHLSOrDASH) {
-    // Handle HLS/MPEG-DASH Upload
+    // Загрузка HLS/MPEG-DASH
     const uploadPromises = files.map((file: any) => {
       const s3Key = `videos/${uniqueId}/${file.originalname}`;
       return s3
@@ -75,7 +78,7 @@ export const handleAdvancedVideoUpload = async (
     });
     await Promise.all(uploadPromises);
 
-    // Determine manifest file URL
+    // Определить URL манифеста
     const manifestFile = files.find(
       (file: any) =>
         file.originalname.endsWith(".m3u8") ||
@@ -90,9 +93,10 @@ export const handleAdvancedVideoUpload = async (
     };
   }
 
-  return null; // Return null if not HLS/DASH to handle regular upload
+  return null; // Вернуть null, если не HLS/DASH, чтобы обработать обычную загрузку
 };
 
+// Объединить секции курса
 export const mergeSections = (
   existingSections: any[],
   newSections: any[]
@@ -105,10 +109,10 @@ export const mergeSections = (
   for (const newSection of newSections) {
     const section = existingSectionsMap.get(newSection.sectionId);
     if (!section) {
-      // Add new section
+      // Добавить новую секцию
       existingSectionsMap.set(newSection.sectionId, newSection);
     } else {
-      // Merge chapters within the existing section
+      // Объединить главы внутри существующей секции
       section.chapters = mergeChapters(section.chapters, newSection.chapters);
       existingSectionsMap.set(newSection.sectionId, section);
     }
@@ -117,6 +121,7 @@ export const mergeSections = (
   return Array.from(existingSectionsMap.values());
 };
 
+// Объединить главы секции
 export const mergeChapters = (
   existingChapters: any[],
   newChapters: any[]
@@ -136,6 +141,7 @@ export const mergeChapters = (
   return Array.from(existingChaptersMap.values());
 };
 
+// Посчитать общий прогресс по курсу
 export const calculateOverallProgress = (sections: any[]): number => {
   const totalChapters = sections.reduce(
     (acc: number, section: any) => acc + section.chapters.length,

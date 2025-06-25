@@ -12,13 +12,13 @@ import {
   createClerkClient,
   requireAuth,
 } from "@clerk/express";
-/* ROUTE IMPORTS */
+/* ИМПОРТЫ МАРШРУТОВ */
 import courseRoutes from "./routes/courseRoutes";
 import userClerkRoutes from "./routes/userClerkRoutes";
 import transactionRoutes from "./routes/transactionRoutes";
 import userCourseProgressRoutes from "./routes/userCourseProgressRoutes";
 
-/* CONFIGURATIONS */
+/* КОНФИГУРАЦИЯ */
 dotenv.config();
 const isProduction = process.env.NODE_ENV === "production";
 if (!isProduction) {
@@ -39,9 +39,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 app.use(clerkMiddleware());
 
-/* ROUTES */
+/* МАРШРУТЫ */
 app.get("/", (req, res) => {
-  res.send("Hello World");
+  res.send("Привет! Сервер работает.");
 });
 
 app.use("/courses", courseRoutes);
@@ -49,22 +49,22 @@ app.use("/users/clerk", requireAuth(), userClerkRoutes);
 app.use("/transactions", requireAuth(), transactionRoutes);
 app.use("/users/course-progress", requireAuth(), userCourseProgressRoutes);
 
-/* SERVER */
+/* СЕРВЕР */
 const port = process.env.PORT || 3000;
 if (!isProduction) {
   app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`Сервер запущен на порту ${port}`); 
   });
 }
 
-// aws production environment
+// AWS production environment
 const serverlessApp = serverless(app);
 export const handler = async (event: any, context: any) => {
   if (event.action === "seed") {
     await seed();
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "Data seeded successfully" }),
+      body: JSON.stringify({ message: "Данные успешно загружены" }), 
     };
   } else {
     return serverlessApp(event, context);
