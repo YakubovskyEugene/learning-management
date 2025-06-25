@@ -13,6 +13,8 @@ import {
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
+import CourseCreateModal from "./CourseCreateModal"; // Новый импорт
+import { CourseFormData } from "@/types"; // Импорт типа
 
 const Courses = () => {
   const router = useRouter();
@@ -28,6 +30,7 @@ const Courses = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // Новое состояние
 
   const filteredCourses = useMemo(() => {
     if (!courses) return [];
@@ -53,29 +56,29 @@ const Courses = () => {
     }
   };
 
-const handleCreateCourse = async () => {
-  if (!user) return;
+  const handleCreateCourse = async (data: CourseFormData) => {
+    if (!user) return;
 
-  try {
-    const result = await createCourse({
-      teacherId: user.id,
-      teacherName: user.fullName || "Неизвестный преподаватель",
-    }).unwrap();
-    // Проверяем, что курс создан, и только тогда переходим
-    const checkCourse = await api
-      .endpoints.getCourse.initiate(result.courseId, { forceRefetch: true })
-      .unwrap();
-    if (checkCourse) {
+    try {
+      const result = await createCourse({
+        teacherId: user.id,
+        teacherName: user.fullName || "Неизвестный преподаватель",
+        title: data.courseTitle,
+        description: data.courseDescription,
+        category: data.courseCategory,
+        price: parseInt(data.coursePrice) * 100, // Конвертация в центы
+        level: "Beginner", // Можно добавить выбор уровня в форму позже
+        status: data.courseStatus ? "Published" : "Draft",
+        sections: [],
+        enrollments: [],
+      }).unwrap();
       router.push(`/teacher/courses/${result.courseId}`, {
         scroll: false,
       });
-    } else {
-      toast.error("Не удалось загрузить новый курс. Попробуйте ещё раз.");
+    } catch (error) {
+      console.error("Ошибка при создании курса:", error);
     }
-  } catch (error) {
-    toast.error("Ошибка при создании курса");
-  }
-};
+  };
 
   if (isLoading) return <Loading />;
 
@@ -85,7 +88,7 @@ const handleCreateCourse = async () => {
         title="Курсы"
         subtitle="Просмотрите ваши курсы"
         rightElement={
-          <Button onClick={handleCreateCourse} className="teacher-courses__header">
+          <Button onClick={() => setIsCreateModalOpen(true)} className="teacher-courses__header">
             Создать курс
           </Button>
         }
@@ -108,6 +111,11 @@ const handleCreateCourse = async () => {
           ))
         )}
       </div>
+      <CourseCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateCourse}
+      />
     </div>
   );
 };

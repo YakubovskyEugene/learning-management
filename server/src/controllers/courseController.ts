@@ -11,11 +11,31 @@ export const listCourses = async (
   res: Response
 ): Promise<void> => {
   const { category } = req.query;
+  const { userId } = getAuth(req);
+
   try {
-    const courses =
-      category && category !== "all"
-        ? await Course.scan("category").eq(category).exec()
-        : await Course.scan().exec();
+    let courses;
+    if (category && category !== "all") {
+      courses = await Course.scan("category")
+        .eq(category)
+        .where("status")
+        .eq("Published") // Фильтр по опубликованным курсам
+        .exec();
+    } else {
+      courses = await Course.scan()
+        .where("status")
+        .eq("Published") // Фильтр по опубликованным курсам
+        .exec();
+    }
+
+    // Если пользователь — преподаватель, показываем его черновики
+    if (userId) {
+      const teacherCourses = await Course.scan("teacherId")
+        .eq(userId)
+        .exec();
+      courses = [...courses, ...teacherCourses];
+    }
+
     res.json({ message: "Курсы успешно получены", data: courses });
   } catch (error) {
     res.status(500).json({ message: "Ошибка при получении курсов", error });
@@ -42,7 +62,18 @@ export const createCourse = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { teacherId, teacherName } = req.body;
+    const {
+      teacherId,
+      teacherName,
+      title,
+      description,
+      category,
+      price,
+      level,
+      status,
+      sections,
+      enrollments,
+    } = req.body;
 
     if (!teacherId || !teacherName) {
       res.status(400).json({ message: "Необходимо указать ID и имя преподавателя" });
@@ -53,15 +84,15 @@ export const createCourse = async (
       courseId: uuidv4(),
       teacherId,
       teacherName,
-      title: "Новый курс",
-      description: "",
-      category: "Без категории",
+      title: title || "Новый курс",
+      description: description || "",
+      category: category || "Без категории",
       image: "",
-      price: 0,
-      level: "Beginner",
-      status: "Draft",
-      sections: [],
-      enrollments: [],
+      price: price || 0,
+      level: level || "Beginner",
+      status: status || "Draft",
+      sections: sections || [],
+      enrollments: enrollments || [],
     });
     await newCourse.save();
 

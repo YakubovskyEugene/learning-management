@@ -103,16 +103,16 @@ export const api = createApi({
     }),
 
     createCourse: build.mutation<
-      Course,
-      { teacherId: string; teacherName: string }
-    >({
-      query: (body) => ({
-        url: `courses`,
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: ["Courses"],
-    }),
+  Course,
+  Partial<Course> // Изменяем тип на Partial<Course>
+>({
+  query: (body) => ({
+    url: `courses`,
+    method: "POST",
+    body,
+  }),
+  invalidatesTags: ["Courses"],
+}),
 
     updateCourse: build.mutation<
       Course,
