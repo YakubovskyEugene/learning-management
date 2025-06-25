@@ -31,7 +31,6 @@ const Courses = () => {
 
   const filteredCourses = useMemo(() => {
     if (!courses) return [];
-
     return courses.filter((course) => {
       const matchesSearch = course.title
         .toLowerCase()
@@ -67,7 +66,6 @@ const Courses = () => {
   };
 
   if (isLoading) return <Loading />;
-  if (isError || !courses) return <div>Ошибка загрузки курсов.</div>;
 
   return (
     <div className="teacher-courses">
@@ -75,28 +73,28 @@ const Courses = () => {
         title="Курсы"
         subtitle="Просмотрите ваши курсы"
         rightElement={
-          <Button
-            onClick={handleCreateCourse}
-            className="teacher-courses__header"
-          >
+          <Button onClick={handleCreateCourse} className="teacher-courses__header">
             Создать курс
           </Button>
         }
       />
-      <Toolbar
-        onSearch={setSearchTerm}
-        onCategoryChange={setSelectedCategory}
-      />
+      <Toolbar onSearch={setSearchTerm} onCategoryChange={setSelectedCategory} />
       <div className="teacher-courses__grid">
-        {filteredCourses.map((course) => (
-          <TeacherCourseCard
-            key={course.courseId}
-            course={course}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            isOwner={course.teacherId === user?.id}
-          />
-        ))}
+        {isError ? (
+          <p>Данные курсов временно недоступны. Вы можете продолжить создание курса.</p>
+        ) : filteredCourses.length === 0 ? (
+          <p>У вас пока нет курсов. Начните с создания нового!</p>
+        ) : (
+          filteredCourses.map((course) => (
+            <TeacherCourseCard
+              key={course.courseId}
+              course={course}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              isOwner={course.teacherId === user?.id}
+            />
+          ))
+        )}
       </div>
     </div>
   );

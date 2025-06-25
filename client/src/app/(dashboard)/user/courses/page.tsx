@@ -25,7 +25,6 @@ const Courses = () => {
 
   const filteredCourses = useMemo(() => {
     if (!courses) return [];
-
     return courses.filter((course) => {
       const matchesSearch = course.title
         .toLowerCase()
@@ -56,26 +55,28 @@ const Courses = () => {
     }
   };
 
-  if (!isLoaded || isLoading) return <Loading />;
-  if (!user) return <div>Войдите в систему чтобы просмотреть ваши курсы.</div>;
-  if (isError || !courses || courses.length === 0)
-    return <div>Вы ещё не записаны ни на один курс.</div>;
+  if (!isLoaded || !user) return <div>Войдите в систему чтобы просмотреть ваши курсы.</div>;
 
   return (
     <div className="user-courses">
       <Header title="Мои курсы" subtitle="Просмотрите ваши приобретенные курсы" />
-      <Toolbar
-        onSearch={setSearchTerm}
-        onCategoryChange={setSelectedCategory}
-      />
+      <Toolbar onSearch={setSearchTerm} onCategoryChange={setSelectedCategory} />
       <div className="user-courses__grid">
-        {filteredCourses.map((course) => (
-          <CourseCard
-            key={course.courseId}
-            course={course}
-            onGoToCourse={handleGoToCourse}
-          />
-        ))}
+        {isLoading ? (
+          <Loading />
+        ) : isError ? (
+          <p>Данные курсов временно недоступны. Попробуйте позже.</p>
+        ) : filteredCourses.length === 0 ? (
+          <p>Вы ещё не записаны ни на один курс.</p>
+        ) : (
+          filteredCourses.map((course) => (
+            <CourseCard
+              key={course.courseId}
+              course={course}
+              onGoToCourse={handleGoToCourse}
+            />
+          ))
+        )}
       </div>
     </div>
   );
