@@ -81,20 +81,25 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
     if (paymentProvider === "stripe" && transactionId) {
       try {
         const paymentIntent: any = await stripe.paymentIntents.retrieve(transactionId, {
-          expand: ["charges.data"],
+          expand: ["charges.data", "payment_method"],
         });
         console.log("PaymentIntent response:", paymentIntent);
 
+        // Пробуем получить cardBrand из charges
         if (paymentIntent.charges?.data?.length > 0) {
           const charge = paymentIntent.charges.data[0];
           if (charge.payment_method_details?.card?.brand) {
             cardBrand = charge.payment_method_details.card.brand.toLowerCase();
             console.log("Extracted cardBrand from charge:", cardBrand);
-          } else {
-            console.log("No card brand in charge payment_method_details");
           }
-        } else {
-          console.log("No charges data in PaymentIntent");
+        }
+        // Альтернатива: получаем из payment_method
+        else if (paymentIntent.payment_method) {
+          const paymentMethod = await stripe.paymentMethods.retrieve(paymentIntent.payment_method as string);
+          if (paymentMethod.card?.brand) {
+            cardBrand = paymentMethod.card.brand.toLowerCase();
+            console.log("Extracted cardBrand from paymentMethod:", cardBrand);
+          }
         }
       } catch (stripeErr) {
         console.error("Ошибка при получении данных Stripe:", stripeErr);
@@ -111,7 +116,6 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
       cardBrand,
     });
     await newTransaction.save();
-    console.log("Saved transaction:", newTransaction);
 
     // 4. Создать начальный прогресс по курсу
     const initialProgress = new UserCourseProgress({
