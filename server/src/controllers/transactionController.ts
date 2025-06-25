@@ -80,7 +80,7 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
 
     if (paymentProvider === "stripe" && transactionId) {
       try {
-        const paymentIntent = await stripe.paymentIntents.retrieve(transactionId, {
+        const paymentIntent: any = await stripe.paymentIntents.retrieve(transactionId, {
           expand: ["charges.data"],
         });
         console.log("PaymentIntent response:", paymentIntent);
