@@ -61,7 +61,7 @@ const customBaseQuery = async (
 export const api = createApi({
   baseQuery: customBaseQuery,
   reducerPath: "api",
-  tagTypes: ["Courses", "Users", "UserCourseProgress"],
+  tagTypes: ["Courses", "Users", "UserCourseProgress", "Transactions"],
   endpoints: (build) => ({
     /* 
     ===============
@@ -151,19 +151,17 @@ export const api = createApi({
     ТРАНЗАКЦИИ
     =============== 
     */
-    getTransactions: build.query<Transaction[], string>({
-      query: (userId) => `transactions?userId=${userId}`,
+    getTransactions: build.query<Transaction[], { userId: string; cardBrand?: string }>({
+    query: ({ userId, cardBrand }) => {
+    const params = new URLSearchParams({ userId });
+    if (cardBrand && cardBrand !== "all") {
+      params.append("cardBrand", cardBrand);
+    }
+    return `transactions?${params.toString()}`;
+    },
+    providesTags: ["Transactions"],
     }),
-    createStripePaymentIntent: build.mutation<
-      { clientSecret: string },
-      { amount: number }
-    >({
-      query: ({ amount }) => ({
-        url: `/transactions/stripe/payment-intent`,
-        method: "POST",
-        body: { amount },
-      }),
-    }),
+
     createTransaction: build.mutation<Transaction, Partial<Transaction>>({
       query: (transaction) => ({
         url: "transactions",
@@ -172,6 +170,14 @@ export const api = createApi({
       }),
     }),
 
+
+    createStripePaymentIntent: build.mutation<{ clientSecret: string }, { amount: number }>({
+    query: ({ amount }) => ({
+    url: `/transactions/stripe/payment-intent`,
+    method: "POST",
+    body: { amount },
+    }),
+  }),
     /* 
     ===============
     ПРОГРЕСС ПОЛЬЗОВАТЕЛЯ В КУРСАХ
@@ -243,7 +249,7 @@ export const {
   useGetUploadVideoUrlMutation,
   useGetTransactionsQuery,
   useCreateTransactionMutation,
-  useCreateStripePaymentIntentMutation,
+  useCreateStripePaymentIntentMutation, // Добавляем этот хук
   useGetUserEnrolledCoursesQuery,
   useGetUserCourseProgressQuery,
   useUpdateUserCourseProgressMutation,

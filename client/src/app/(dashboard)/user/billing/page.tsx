@@ -36,10 +36,10 @@ const CARD_LABELS: Record<string, string> = {
 const UserBilling = () => {
   const [paymentType, setPaymentType] = useState("all");
   const { user, isLoaded } = useUser();
-  const { data: transactions, isLoading: isLoadingTransactions } =
-    useGetTransactionsQuery(user?.id || "", {
-      skip: !isLoaded || !user,
-    });
+  const { data: transactions, isLoading: isLoadingTransactions, error } = useGetTransactionsQuery(
+    { userId: user?.id || "", cardBrand: paymentType }, // Используем paymentType как cardBrand
+    { skip: !isLoaded || !user }
+  );
 
   // Фильтруем только транзакции по картам
   const cardTransactions =
@@ -58,6 +58,7 @@ const UserBilling = () => {
 
   if (!isLoaded) return <Loading />;
   if (!user) return <div>Войдите в систему чтобы просмотреть информацию о платежах.</div>;
+  if (error) return <div>Ошибка при загрузке транзакций: {error.toString()}</div>;
 
   return (
     <div className="billing">
@@ -94,9 +95,7 @@ const UserBilling = () => {
                 <TableRow className="billing__table-header-row">
                   <TableHead className="billing__table-cell">Дата</TableHead>
                   <TableHead className="billing__table-cell">Сумма</TableHead>
-                  <TableHead className="billing__table-cell">
-                    Тип карты
-                  </TableHead>
+                  <TableHead className="billing__table-cell">Тип карты</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="billing__table-body">

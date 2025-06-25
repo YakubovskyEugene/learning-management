@@ -22,47 +22,36 @@ import { useUser } from "@clerk/nextjs";
 import React, { useState } from "react";
 
 const TeacherBilling = () => {
-  const [paymentType, setPaymentType] = useState("all");
+  const [cardBrand, setCardBrand] = useState("all");
   const { user, isLoaded } = useUser();
-  const { data: transactions, isLoading: isLoadingTransactions } =
-    useGetTransactionsQuery(user?.id || "", {
-      skip: !isLoaded || !user,
-    });
+  const { data: transactions, isLoading: isLoadingTransactions, error } = useGetTransactionsQuery(
+    { userId: user?.id || "", cardBrand },
+    { skip: !isLoaded || !user }
+  );
 
-  const filteredData =
-    transactions?.filter((transaction) => {
-      const matchesTypes =
-        paymentType === "all" || transaction.paymentProvider === paymentType;
-      return matchesTypes;
-    }) || [];
+  const filteredData = transactions || []; // Простая фильтрация, так как server уже фильтрует по cardBrand
 
   if (!isLoaded) return <Loading />;
   if (!user) return <div>Войдите в систему чтобы посмотреть историю платежей.</div>;
+  if (error) return <div>Ошибка при загрузке транзакций: {error.toString()}</div>;
 
   return (
     <div className="billing">
       <div className="billing__container">
         <h2 className="billing__title">История платежей</h2>
         <div className="billing__filters">
-          <Select value={paymentType} onValueChange={setPaymentType}>
+          <Select value={cardBrand} onValueChange={setCardBrand}>
             <SelectTrigger className="billing__select">
-              <SelectValue placeholder="Тип платежа" />
+              <SelectValue placeholder="Бренд карты" />
             </SelectTrigger>
-
             <SelectContent className="billing__select-content">
-              <SelectItem className="billing__select-item" value="all">
-                Все типы
-              </SelectItem>
-              <SelectItem className="billing__select-item" value="stripe">
-                Stripe
-              </SelectItem>
-              <SelectItem className="billing__select-item" value="paypal">
-                Paypal
-              </SelectItem>
+              <SelectItem className="billing__select-item" value="all">Все карты</SelectItem>
+              <SelectItem className="billing__select-item" value="visa">Visa</SelectItem>
+              <SelectItem className="billing__select-item" value="mastercard">MasterCard</SelectItem>
+              <SelectItem className="billing__select-item" value="amex">American Express</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
         <div className="billing__grid">
           {isLoadingTransactions ? (
             <Loading />
@@ -72,9 +61,8 @@ const TeacherBilling = () => {
                 <TableRow className="billing__table-header-row">
                   <TableHead className="billing__table-cell">Дата</TableHead>
                   <TableHead className="billing__table-cell">Сумма</TableHead>
-                  <TableHead className="billing__table-cell">
-                    Способ оплаты
-                  </TableHead>
+                  <TableHead className="billing__table-cell">Способ оплаты</TableHead>
+                  <TableHead className="billing__table-cell">Бренд карты</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="billing__table-body">
@@ -93,13 +81,16 @@ const TeacherBilling = () => {
                       <TableCell className="billing__table-cell">
                         {transaction.paymentProvider}
                       </TableCell>
+                      <TableCell className="billing__table-cell">
+                        {transaction.cardBrand || "N/A"}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow className="billing__table-row">
                     <TableCell
                       className="billing__table-cell text-center"
-                      colSpan={3}
+                      colSpan={4}
                     >
                       Нет транзакций для отображения
                     </TableCell>

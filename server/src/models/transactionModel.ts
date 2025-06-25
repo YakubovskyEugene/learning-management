@@ -28,6 +28,10 @@ const transactionSchema = new Schema(
       type: String,
       required: true,
     },
+    cardBrand: { 
+      type: String, 
+      required: false 
+    },
     amount: Number,
   },
   {

@@ -16,16 +16,15 @@ if (!process.env.STRIPE_SECRET_KEY) {
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Получить список транзакций
-export const listTransactions = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { userId } = req.query;
+export const listTransactions = async (req: Request, res: Response): Promise<void> => {
+  const { userId, cardBrand } = req.query;
 
   try {
-    const transactions = userId
-      ? await Transaction.query("userId").eq(userId).exec()
-      : await Transaction.scan().exec();
+    let query = Transaction.query("userId").eq(userId);
+    if (cardBrand) {
+      query = query.where("cardBrand").eq(cardBrand);
+    }
+    const transactions = userId ? await query.exec() : await Transaction.scan().exec();
 
     res.json({
       message: "Транзакции успешно получены",
@@ -71,56 +70,38 @@ export const createStripePaymentIntent = async (
 };
 
 // Создать транзакцию и прогресс по курсу
-export const createTransaction = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const createTransaction = async (req: Request, res: Response): Promise<void> => {
   const { userId, courseId, transactionId, amount, paymentProvider } = req.body;
 
   try {
-    // 1. Получить информацию о курсе
     const course = await Course.get(courseId);
-
-    // 2. Получить тип карты из Stripe, если это Stripe-платёж
     let provider = paymentProvider;
+    let cardBrand: string | undefined;
+
     if (paymentProvider === "stripe" && transactionId) {
       try {
-        // ВАЖНО: добавьте "charges" в expand!
         const paymentIntent: any = await stripe.paymentIntents.retrieve(transactionId, {
           expand: ["charges", "charges.data.payment_method_details.card"],
         });
-
         if (
-          paymentIntent &&
-          paymentIntent.charges &&
-          paymentIntent.charges.data &&
-          paymentIntent.charges.data.length > 0
+          paymentIntent?.charges?.data?.length > 0 &&
+          paymentIntent.charges.data[0].payment_method_details?.card?.brand
         ) {
-          const charge = paymentIntent.charges.data[0];
-          if (
-            charge.payment_method_details &&
-            charge.payment_method_details.card &&
-            charge.payment_method_details.card.brand
-          ) {
-            provider = charge.payment_method_details.card.brand; // visa, mastercard, etc.
-          }
+          cardBrand = paymentIntent.charges.data[0].payment_method_details.card.brand;
         }
       } catch (stripeErr) {
         console.error("Ошибка при получении типа карты Stripe:", stripeErr);
       }
     }
 
-    // ЛОГ перед сохранением транзакции:
-    console.log("Сохраняем транзакцию с provider:", provider);
-
-    // 3. Создать запись о транзакции
     const newTransaction = new Transaction({
       dateTime: new Date().toISOString(),
       userId,
       courseId,
       transactionId,
       amount,
-      paymentProvider: provider,
+      paymentProvider,
+      cardBrand,
     });
     await newTransaction.save();
 
