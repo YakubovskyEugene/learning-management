@@ -23,13 +23,25 @@ const customBaseQuery = async (
   try {
     const result: any = await baseQuery(args, api, extraOptions);
 
-    if (result.error) {
+    // Определяем, является ли запрос запросом на получение курсов
+    const isCoursesQuery = args === "courses" || args.toString().includes("users/course-progress");
+    const isError = result.error;
+
+    if (isError) {
       const errorData = result.error.data;
+      const errorStatus = result.error.status;
       const errorMessage =
         errorData?.message ||
-        result.error.status.toString() ||
+        errorStatus.toString() ||
         "Произошла ошибка";
-      toast.error(`Ошибка: ${errorMessage}`);
+
+      // Показываем toast только если это не запрос курсов и не 404/500 (отсутствие данных)
+      if (
+        !isCoursesQuery ||
+        (errorStatus !== 404 && errorStatus !== 500)
+      ) {
+        toast.error(`Ошибка: ${errorMessage}`);
+      }
     }
 
     const isMutationRequest =
@@ -53,6 +65,11 @@ const customBaseQuery = async (
   } catch (error: unknown) {
     const errorMessage =
       error instanceof Error ? error.message : "Неизвестная ошибка";
+
+    // Показываем toast только если это не связано с курсами
+    if (!args.toString().includes("courses") && !args.toString().includes("users/course-progress")) {
+      toast.error(`Ошибка: ${errorMessage}`);
+    }
 
     return { error: { status: "FETCH_ERROR", error: errorMessage } };
   }
@@ -152,14 +169,14 @@ export const api = createApi({
     =============== 
     */
     getTransactions: build.query<Transaction[], { userId: string; cardBrand?: string }>({
-    query: ({ userId, cardBrand }) => {
-    const params = new URLSearchParams({ userId });
-    if (cardBrand && cardBrand !== "all") {
-      params.append("cardBrand", cardBrand);
-    }
-    return `transactions?${params.toString()}`;
-    },
-    providesTags: ["Transactions"],
+      query: ({ userId, cardBrand }) => {
+        const params = new URLSearchParams({ userId });
+        if (cardBrand && cardBrand !== "all") {
+          params.append("cardBrand", cardBrand);
+        }
+        return `transactions?${params.toString()}`;
+      },
+      providesTags: ["Transactions"],
     }),
 
     createTransaction: build.mutation<Transaction, Partial<Transaction>>({
@@ -170,14 +187,13 @@ export const api = createApi({
       }),
     }),
 
-
     createStripePaymentIntent: build.mutation<{ clientSecret: string }, { amount: number }>({
-    query: ({ amount }) => ({
-    url: `/transactions/stripe/payment-intent`,
-    method: "POST",
-    body: { amount },
+      query: ({ amount }) => ({
+        url: `/transactions/stripe/payment-intent`,
+        method: "POST",
+        body: { amount },
+      }),
     }),
-  }),
     /* 
     ===============
     ПРОГРЕСС ПОЛЬЗОВАТЕЛЯ В КУРСАХ
@@ -249,7 +265,7 @@ export const {
   useGetUploadVideoUrlMutation,
   useGetTransactionsQuery,
   useCreateTransactionMutation,
-  useCreateStripePaymentIntentMutation, // Добавляем этот хук
+  useCreateStripePaymentIntentMutation,
   useGetUserEnrolledCoursesQuery,
   useGetUserCourseProgressQuery,
   useUpdateUserCourseProgressMutation,
