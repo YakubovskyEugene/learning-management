@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { clerkClient } from "../index";
 
-// Обновить данные пользователя Clerk
+// Обновить данные пользователя Clerk  h
 export const updateUser = async (
   req: Request,
   res: Response
