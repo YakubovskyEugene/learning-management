@@ -43,7 +43,7 @@ declare global {
     description?: string;
     category: string;
     image?: string;
-    price?: number; // Stored in cents (e.g., 4999 for $49.99)
+    price?: number;
     level: "Beginner" | "Intermediate" | "Advanced";
     status: "Draft" | "Published";
     sections: Section[];
@@ -59,8 +59,9 @@ declare global {
     courseId: string;
     paymentProvider: string;
     paymentMethodId?: string;
-    amount: number; // Stored in cents
+    amount: number;
     savePaymentMethod?: boolean;
+    courseTitle?: string; // Добавлено поле courseTitle
   }
 
   interface DateRange {

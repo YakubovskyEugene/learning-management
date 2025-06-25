@@ -8,18 +8,13 @@ import UserCourseProgress from "../models/userCourseProgressModel";
 dotenv.config();
 
 if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error(
-    "STRIPE_SECRET_KEY обязательна, но не найдена в переменных окружения"
-  );
+  throw new Error("STRIPE_SECRET_KEY обязательна, но не найдена в переменных окружения");
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Получить список транзакций
-export const listTransactions = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const listTransactions = async (req: Request, res: Response): Promise<void> => {
   const { userId } = req.query;
 
   try {
@@ -27,9 +22,20 @@ export const listTransactions = async (
       ? await Transaction.query("userId").eq(userId).exec()
       : await Transaction.scan().exec();
 
+    // Получаем информацию о курсах для каждой транзакции
+    const transactionsWithCourseTitle = await Promise.all(
+      transactions.map(async (transaction) => {
+        const course = await Course.get(transaction.courseId);
+        return {
+          ...transaction.toJSON(),
+          courseTitle: course ? course.title : "Курс не найден",
+        };
+      })
+    );
+
     res.json({
       message: "Транзакции успешно получены",
-      data: transactions,
+      data: transactionsWithCourseTitle,
     });
   } catch (error) {
     res.status(500).json({ message: "Ошибка при получении транзакций", error });
@@ -37,10 +43,7 @@ export const listTransactions = async (
 };
 
 // Создать Stripe Payment Intent
-export const createStripePaymentIntent = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const createStripePaymentIntent = async (req: Request, res: Response): Promise<void> => {
   let { amount } = req.body;
 
   if (!amount || amount <= 0) {
@@ -64,17 +67,12 @@ export const createStripePaymentIntent = async (
       },
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Ошибка при создании платежа Stripe", error });
+    res.status(500).json({ message: "Ошибка при создании платежа Stripe", error });
   }
 };
 
 // Создать транзакцию и прогресс по курсу
-export const createTransaction = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const createTransaction = async (req: Request, res: Response): Promise<void> => {
   const { userId, courseId, transactionId, amount, paymentProvider } = req.body;
 
   try {
@@ -110,9 +108,6 @@ export const createTransaction = async (
         console.error("Ошибка при получении типа карты Stripe:", stripeErr);
       }
     }
-    console.log("Сохраняем транзакцию с provider:", provider);
-
-    // ЛОГ перед сохранением транзакции:
     console.log("Сохраняем транзакцию с provider:", provider);
 
     // 3. Создать запись о транзакции
@@ -161,8 +156,6 @@ export const createTransaction = async (
       },
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Ошибка при создании транзакции и записи на курс", error });
+    res.status(500).json({ message: "Ошибка при создании транзакции и записи на курс", error });
   }
 };
