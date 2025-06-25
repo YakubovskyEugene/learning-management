@@ -26,8 +26,8 @@ const customBaseQuery = async (
     if (result.error) {
       const errorData = result.error.data;
       const status = result.error.status;
-      // Не показываем тосты для ошибок 404 или случаев, когда данные просто отсутствуют
-      if (status !== 404 && errorData?.message) {
+      // Не показываем тосты для 404 или случаев, когда данных нет (пустой результат)
+      if (status !== 404 && errorData?.message && status !== 204) {
         const errorMessage = errorData.message || "Произошла ошибка";
         toast.error(`Ошибка: ${errorMessage}`);
       }
@@ -44,10 +44,7 @@ const customBaseQuery = async (
 
     if (result.data) {
       result.data = result.data.data;
-    } else if (
-      result.error?.status === 204 ||
-      result.meta?.response?.status === 204
-    ) {
+    } else if (result.error?.status === 204 || result.meta?.response?.status === 204) {
       return { data: null };
     }
 
@@ -55,8 +52,10 @@ const customBaseQuery = async (
   } catch (error: unknown) {
     const errorMessage =
       error instanceof Error ? error.message : "Неизвестная ошибка";
-    // Показываем тост только для критических ошибок, а не для отсутствия данных
-    toast.error(`Критическая ошибка: ${errorMessage}`);
+    // Показываем тост только для критических ошибок, не связанных с отсутствием данных
+    if (!(errorMessage.includes("404") || errorMessage.includes("Not Found"))) {
+      toast.error(`Критическая ошибка: ${errorMessage}`);
+    }
     return { error: { status: "FETCH_ERROR", error: errorMessage } };
   }
 };
@@ -64,7 +63,7 @@ const customBaseQuery = async (
 export const api = createApi({
   baseQuery: customBaseQuery,
   reducerPath: "api",
-  tagTypes: ["Courses", "Users", "UserCourseProgress"],
+  tagTags: ["Courses", "Users", "UserCourseProgress"],
   endpoints: (build) => ({
     /* 
     ===============
