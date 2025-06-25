@@ -1,30 +1,28 @@
 "use client";
 
-import { CustomFormField } from "@/components/CustomFormField";
 import Header from "@/components/Header";
+import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { courseSchema } from "@/lib/schemas";
-import {
-  centsToDollars,
-  createCourseFormData,
-  uploadAllVideos,
-} from "@/lib/utils";
-import { openSectionModal, setSections } from "@/state";
 import {
   useGetCourseQuery,
   useUpdateCourseMutation,
   useGetUploadVideoUrlMutation,
 } from "@/state/api";
-import { useAppDispatch, useAppSelector } from "@/state/redux";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Plus } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import DroppableComponent from "./Droppable";
-import ChapterModal from "./ChapterModal";
+import { useAppDispatch, useAppSelector } from "@/state/hooks";
+import { setSections } from "@/state/slices/globalSlice";
+import { CourseFormData, courseSchema } from "@/lib/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { centsToDollars } from "@/lib/utils";
+import { toast } from "sonner"; // Добавляем импорт
+import CustomFormField from "@/components/CustomFormField";
 import SectionModal from "./SectionModal";
+import ChapterModal from "./ChapterModal";
+import Droppable from "./Droppable";
 
 const CourseEditor = () => {
   const router = useRouter();
@@ -59,164 +57,98 @@ const CourseEditor = () => {
       });
       dispatch(setSections(course.sections || []));
     }
-  }, [course, methods, dispatch]); 
+  }, [course, methods, dispatch]);
 
   const onSubmit = async (data: CourseFormData) => {
-  try {
-    console.log("Данные формы:", data); // Логируем данные для отладки
-    const updatedSections = await uploadAllVideos(
-      sections,
-      id,
-      getUploadVideoUrl
-    );
-    console.log("Обновлённые секции:", updatedSections); // Логируем секции
+    try {
+      const updatedSections = await uploadAllVideos(
+        sections,
+        id,
+        getUploadVideoUrl
+      );
 
-    const formData = createCourseFormData(data, updatedSections);
-    console.log("FormData для отправки:", formData); // Логируем FormData
+      const formData = createCourseFormData(data, updatedSections);
 
-    await updateCourse({
-      courseId: id,
-      formData,
-    }).unwrap();
+      await updateCourse({
+        courseId: id,
+        formData,
+      }).unwrap();
 
-    toast.success("Курс успешно обновлён");
-    refetch();
-  } catch (error) {
-    console.error("Ошибка при обновлении курса:", error);
-    if (error instanceof Error) {
-      toast.error(`Ошибка: ${error.message}`);
-    } else {
-      toast.error("Неизвестная ошибка при обновлении курса");
+      toast.success("Курс успешно обновлён"); // Теперь работает
+      refetch();
+    } catch (error) {
+      console.error("Ошибка при обновлении курса:", error);
+      if (error instanceof Error) {
+        toast.error(`Ошибка: ${error.message}`);
+      } else {
+        toast.error("Неизвестная ошибка при обновлении курса");
+      }
     }
-  }
   };
 
+  if (isLoading) return <Loading />;
+
   return (
-    <div>
-      <div className="flex items-center gap-5 mb-5">
-        <button
-          className="flex items-center border border-customgreys-dirtyGrey rounded-lg p-2 gap-2 cursor-pointer hover:bg-customgreys-dirtyGrey hover:text-white-100 text-customgreys-dirtyGrey"
-          onClick={() => router.push("/teacher/courses", { scroll: false })}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Вернуться к курсам</span>
-        </button>
-      </div>
-
+    <div className="course-editor">
+      <Header
+        title={course?.title || "Редактирование курса"}
+        subtitle="Редактируйте ваш курс"
+        rightElement={
+          <Button
+            type="submit"
+            form="course-form"
+            className="bg-primary-700 text-white hover:bg-primary-600"
+          >
+            Сохранить черновик
+          </Button>
+        }
+      />
       <Form {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)}>
-          <Header
-            title="Настройка курса"
-            subtitle="Заполните все поля и сохраните курс"
-            rightElement={
-              <div className="flex items-center space-x-4">
-                <CustomFormField
-                  name="courseStatus"
-                  label={methods.watch("courseStatus") ? "Опубликован" : "Черновик"}
-                  type="switch"
-                  className="flex items-center space-x-2"
-                  labelClassName={`text-sm font-medium ${
-                    methods.watch("courseStatus")
-                      ? "text-green-500"
-                      : "text-yellow-500"
-                  }`}
-                  inputClassName="data-[state=checked]:bg-green-500"
-                />
-                <Button
-                  type="submit"
-                  className="bg-primary-700 hover:bg-primary-600"
-                >
-                  {methods.watch("courseStatus")
-                    ? "Обновить опубликованный курс"
-                    : "Сохранить черновик"}
-                </Button>
-              </div>
-            }
+        <form
+          id="course-form"
+          onSubmit={methods.handleSubmit(onSubmit)}
+          className="course-editor__form"
+        >
+          <CustomFormField
+            name="courseTitle"
+            label="Название курса"
+            placeholder="Введите название курса"
           />
-
-          <div className="flex justify-between md:flex-row flex-col gap-10 mt-5 font-dm-sans">
-            <div className="basis-1/2">
-              <div className="space-y-4">
-                <CustomFormField
-                  name="courseTitle"
-                  label="Название курса"
-                  type="text"
-                  placeholder="Введите название курса"
-                  className="border-none"
-                  initialValue={course?.title}
-                />
-
-                <CustomFormField
-                  name="courseDescription"
-                  label="Описание курса"
-                  type="textarea"
-                  placeholder="Введите описание курса"
-                  initialValue={course?.description}
-                />
-
-                <CustomFormField
-                  name="courseCategory"
-                  label="Категория курса"
-                  type="select"
-                  placeholder="Выберите категорию"
-                  options={[
-                    { value: "technology", label: "Технологии" },
-                    { value: "science", label: "Наука" },
-                    { value: "mathematics", label: "Математика" },
-                    {
-                      value: "Artificial Intelligence",
-                      label: "Искусственный интеллект",
-                    },
-                  ]}
-                  initialValue={course?.category}
-                />
-
-                <CustomFormField
-                  name="coursePrice"
-                  label="Цена курса"
-                  type="number"
-                  placeholder="0"
-                  initialValue={course?.price}
-                />
-              </div>
-            </div>
-
-            <div className="bg-customgreys-darkGrey mt-4 md:mt-0 p-4 rounded-lg basis-1/2">
-              <div className="flex justify-between items-center mb-2">
-                <h2 className="text-2xl font-semibold text-secondary-foreground">
-                  Секции
-                </h2>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    dispatch(openSectionModal({ sectionIndex: null }))
-                  }
-                  className="border-none text-primary-700 group"
-                >
-                  <Plus className="mr-1 h-4 w-4 text-primary-700 group-hover:white-100" />
-                  <span className="text-primary-700 group-hover:white-100">
-                    Добавить секцию
-                  </span>
-                </Button>
-              </div>
-
-              {isLoading ? (
-                <p>Загрузка содержимого курса...</p>
-              ) : sections.length > 0 ? (
-                <DroppableComponent />
-              ) : (
-                <p>Секции отсутствуют</p>
-              )}
-            </div>
-          </div>
+          <CustomFormField
+            name="courseDescription"
+            label="Описание курса"
+            type="textarea"
+            placeholder="Введите описание курса"
+          />
+          <CustomFormField
+            name="courseCategory"
+            label="Категория курса"
+            type="select"
+            placeholder="Выберите категорию"
+            options={[
+              { value: "technology", label: "Технологии" },
+              { value: "science", label: "Наука" },
+              { value: "mathematics", label: "Математика" },
+              { value: "Artificial Intelligence", label: "Искусственный интеллект" },
+            ]}
+          />
+          <CustomFormField
+            name="coursePrice"
+            label="Цена курса"
+            type="number"
+            placeholder="0"
+          />
+          <CustomFormField
+            name="courseStatus"
+            label="Статус курса"
+            type="switch"
+            placeholder="Опубликовать курс"
+          />
+          <Droppable sections={sections} courseId={id} />
         </form>
       </Form>
-
-      <ChapterModal />
       <SectionModal />
+      <ChapterModal />
     </div>
   );
 };
