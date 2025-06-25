@@ -1,3 +1,11 @@
+export interface CourseFormData {
+  courseTitle: string;
+  courseDescription: string;
+  courseCategory: string;
+  coursePrice: string;
+  courseStatus: boolean;
+}
+
 declare global {
   interface PaymentMethod {
     methodId: string;
