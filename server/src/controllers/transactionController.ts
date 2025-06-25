@@ -78,6 +78,10 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
     let provider = paymentProvider;
     let cardBrand: string = "неизвестно"; // Значение по умолчанию
 
+    // Убедимся, что amount не нулевой
+    let finalAmount = amount || 50; // Минимальная сумма 50, если не указано
+    if (finalAmount <= 0) finalAmount = 50;
+
     if (paymentProvider === "stripe" && transactionId) {
       try {
         const paymentIntent: any = await stripe.paymentIntents.retrieve(transactionId, {
@@ -85,20 +89,15 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
         });
         console.log("PaymentIntent response:", paymentIntent);
 
-        // Пробуем получить cardBrand из charges
         if (paymentIntent.charges?.data?.length > 0) {
           const charge = paymentIntent.charges.data[0];
           if (charge.payment_method_details?.card?.brand) {
             cardBrand = charge.payment_method_details.card.brand.toLowerCase();
-            console.log("Extracted cardBrand from charge:", cardBrand);
           }
-        }
-        // Альтернатива: получаем из payment_method
-        else if (paymentIntent.payment_method) {
+        } else if (paymentIntent.payment_method) {
           const paymentMethod = await stripe.paymentMethods.retrieve(paymentIntent.payment_method as string);
           if (paymentMethod.card?.brand) {
             cardBrand = paymentMethod.card.brand.toLowerCase();
-            console.log("Extracted cardBrand from paymentMethod:", cardBrand);
           }
         }
       } catch (stripeErr) {
@@ -111,7 +110,7 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
       userId,
       courseId,
       transactionId,
-      amount,
+      amount: finalAmount,
       paymentProvider,
       cardBrand,
     });
