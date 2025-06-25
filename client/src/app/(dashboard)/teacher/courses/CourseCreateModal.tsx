@@ -36,8 +36,8 @@ const CourseCreateModal = ({ isOpen, onClose, onSubmit }: CourseCreateModalProps
   };
 
   return (
-    <CustomModal isOpen={isOpen} onClose={onClose} className="flex items-center justify-center">
-      <div className="course-create-modal bg-customgreys-darkGrey p-6 rounded-lg shadow-lg w-full max-w-md">
+    <CustomModal isOpen={isOpen} onClose={onClose}>
+      <div className="course-create-modal p-6 rounded-lg shadow-lg w-full max-w-md">
         <div className="course-create-modal__header flex justify-between items-center mb-4">
           <h2 className="course-create-modal__title text-2xl font-semibold text-secondary-foreground">
             Создать новый курс
