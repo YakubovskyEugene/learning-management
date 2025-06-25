@@ -18,7 +18,7 @@ import { setSections } from "@/state/slices/globalSlice";
 import { CourseFormData, courseSchema } from "@/lib/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { centsToDollars } from "@/lib/utils";
-import { toast } from "sonner"; // Добавляем импорт
+import { toast } from "sonner"; // Добавили импорт
 import CustomFormField from "@/components/CustomFormField";
 import SectionModal from "./SectionModal";
 import ChapterModal from "./ChapterModal";
