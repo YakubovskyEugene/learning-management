@@ -1,4 +1,3 @@
-
 import Stripe from "stripe";
 import dotenv from "dotenv";
 import { Request, Response } from "express";
@@ -81,18 +80,24 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
 
     if (paymentProvider === "stripe" && transactionId) {
       try {
-        const paymentIntent: any = await stripe.paymentIntents.retrieve(transactionId, {
-          expand: ["charges", "charges.data.payment_method_details.card"],
+        const paymentIntent = await stripe.paymentIntents.retrieve(transactionId, {
+          expand: ["charges.data"],
         });
-        if (
-          paymentIntent?.charges?.data?.length > 0 &&
-          paymentIntent.charges.data[0].payment_method_details?.card?.brand
-        ) {
-          cardBrand = paymentIntent.charges.data[0].payment_method_details.card.brand;
+        console.log("PaymentIntent response:", paymentIntent);
+
+        if (paymentIntent.charges?.data?.length > 0) {
+          const charge = paymentIntent.charges.data[0];
+          if (charge.payment_method_details?.card?.brand) {
+            cardBrand = charge.payment_method_details.card.brand.toLowerCase();
+            console.log("Extracted cardBrand from charge:", cardBrand);
+          } else {
+            console.log("No card brand in charge payment_method_details");
+          }
+        } else {
+          console.log("No charges data in PaymentIntent");
         }
       } catch (stripeErr) {
-        console.error("Ошибка при получении типа карты Stripe:", stripeErr);
-        // Продолжаем с cardBrand = "unknown"
+        console.error("Ошибка при получении данных Stripe:", stripeErr);
       }
     }
 
@@ -106,6 +111,7 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
       cardBrand,
     });
     await newTransaction.save();
+    console.log("Saved transaction:", newTransaction);
 
     // 4. Создать начальный прогресс по курсу
     const initialProgress = new UserCourseProgress({

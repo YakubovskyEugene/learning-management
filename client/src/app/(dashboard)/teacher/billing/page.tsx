@@ -21,8 +21,8 @@ import { useGetTransactionsQuery } from "@/state/api";
 import { useUser } from "@clerk/nextjs";
 import React, { useState } from "react";
 
-// Список поддерживаемых карт для фильтра и отображения
-const CARD_TYPES = ["visa", "mastercard", "amex", "discover", "jcb", "diners"];
+// Список поддерживаемых карт для фильтра и отображения, включая "неизвестно"
+const CARD_TYPES = ["visa", "mastercard", "amex", "discover", "jcb", "diners", "unknown"];
 
 const CARD_LABELS: Record<string, string> = {
   visa: "Visa",
@@ -31,28 +31,30 @@ const CARD_LABELS: Record<string, string> = {
   discover: "Discover",
   jcb: "JCB",
   diners: "Diners Club",
+  unknown: "Неизвестно", // Добавили соответствие для "неизвестно"
 };
 
 const TeacherBilling = () => {
   const [paymentType, setPaymentType] = useState("all");
   const { user, isLoaded } = useUser();
   const { data: transactions, isLoading: isLoadingTransactions, error } = useGetTransactionsQuery(
-    { userId: user?.id || "", cardBrand: paymentType }, // Используем paymentType как cardBrand
+    { userId: user?.id || "", cardBrand: paymentType === "all" ? undefined : paymentType },
     { skip: !isLoaded || !user }
   );
 
-  // Фильтруем только транзакции по картам
+  // Фильтруем только транзакции по картам, включая "неизвестно"
   const cardTransactions =
     transactions?.filter((transaction) =>
-      CARD_TYPES.includes(transaction.paymentProvider)
+      CARD_TYPES.includes(transaction.cardBrand?.toLowerCase() || "unknown")
     ) || [];
 
-  // Фильтрация по типу карты
+  // Фильтрация по типу карты (cardBrand)
   const filteredData =
     cardTransactions.filter((transaction) => {
+      const transactionCardBrand = transaction.cardBrand?.toLowerCase() || "unknown";
       return (
         paymentType === "all" ||
-        transaction.paymentProvider === paymentType
+        transactionCardBrand === paymentType
       );
     }) || [];
 
@@ -112,8 +114,8 @@ const TeacherBilling = () => {
                         {formatPrice(transaction.amount)}
                       </TableCell>
                       <TableCell className="billing__table-cell">
-                        {CARD_LABELS[transaction.paymentProvider] ||
-                          transaction.paymentProvider}
+                        {CARD_LABELS[transaction.cardBrand?.toLowerCase() || "unknown"] ||
+                          transaction.cardBrand}
                       </TableCell>
                     </TableRow>
                   ))
