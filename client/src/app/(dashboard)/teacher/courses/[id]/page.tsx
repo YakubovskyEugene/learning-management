@@ -62,24 +62,33 @@ const CourseEditor = () => {
   }, [course, methods, dispatch]); 
 
   const onSubmit = async (data: CourseFormData) => {
-    try {
-      const updatedSections = await uploadAllVideos(
-        sections,
-        id,
-        getUploadVideoUrl
-      );
+  try {
+    console.log("Данные формы:", data); // Логируем данные для отладки
+    const updatedSections = await uploadAllVideos(
+      sections,
+      id,
+      getUploadVideoUrl
+    );
+    console.log("Обновлённые секции:", updatedSections); // Логируем секции
 
-      const formData = createCourseFormData(data, updatedSections);
+    const formData = createCourseFormData(data, updatedSections);
+    console.log("FormData для отправки:", formData); // Логируем FormData
 
-      await updateCourse({
-        courseId: id,
-        formData,
-      }).unwrap();
+    await updateCourse({
+      courseId: id,
+      formData,
+    }).unwrap();
 
-      refetch();
-    } catch (error) {
-      console.error("Не получилось обновить курс:", error);
+    toast.success("Курс успешно обновлён");
+    refetch();
+  } catch (error) {
+    console.error("Ошибка при обновлении курса:", error);
+    if (error instanceof Error) {
+      toast.error(`Ошибка: ${error.message}`);
+    } else {
+      toast.error("Неизвестная ошибка при обновлении курса");
     }
+  }
   };
 
   return (
