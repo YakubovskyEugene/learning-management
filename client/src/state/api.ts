@@ -24,22 +24,20 @@ const customBaseQuery = async (
     const result: any = await baseQuery(args, api, extraOptions);
 
     // Определяем, является ли запрос запросом на получение курсов
-    const isCoursesQuery = args === "courses" || args.toString().includes("users/course-progress");
+    const isCoursesQuery =
+      args === "courses" ||
+      args.toString().includes("courses") ||
+      args.toString().includes("users/course-progress");
     const isError = result.error;
 
     if (isError) {
       const errorData = result.error.data;
       const errorStatus = result.error.status;
       const errorMessage =
-        errorData?.message ||
-        errorStatus.toString() ||
-        "Произошла ошибка";
+        errorData?.message || errorStatus.toString() || "Произошла ошибка";
 
-      // Показываем toast только если это не запрос курсов и не 404/500 (отсутствие данных)
-      if (
-        !isCoursesQuery ||
-        (errorStatus !== 404 && errorStatus !== 500)
-      ) {
+      // Показываем toast только если это не запрос курсов
+      if (!isCoursesQuery) {
         toast.error(`Ошибка: ${errorMessage}`);
       }
     }
@@ -67,7 +65,10 @@ const customBaseQuery = async (
       error instanceof Error ? error.message : "Неизвестная ошибка";
 
     // Показываем toast только если это не связано с курсами
-    if (!args.toString().includes("courses") && !args.toString().includes("users/course-progress")) {
+    if (
+      !args.toString().includes("courses") &&
+      !args.toString().includes("users/course-progress")
+    ) {
       toast.error(`Ошибка: ${errorMessage}`);
     }
 
@@ -168,7 +169,10 @@ export const api = createApi({
     ТРАНЗАКЦИИ
     =============== 
     */
-    getTransactions: build.query<Transaction[], { userId: string; cardBrand?: string }>({
+    getTransactions: build.query<
+      Transaction[],
+      { userId: string; cardBrand?: string }
+    >({
       query: ({ userId, cardBrand }) => {
         const params = new URLSearchParams({ userId });
         if (cardBrand && cardBrand !== "all") {
@@ -187,7 +191,10 @@ export const api = createApi({
       }),
     }),
 
-    createStripePaymentIntent: build.mutation<{ clientSecret: string }, { amount: number }>({
+    createStripePaymentIntent: build.mutation<
+      { clientSecret: string },
+      { amount: number }
+    >({
       query: ({ amount }) => ({
         url: `/transactions/stripe/payment-intent`,
         method: "POST",

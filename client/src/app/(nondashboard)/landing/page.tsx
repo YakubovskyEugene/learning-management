@@ -108,7 +108,8 @@ const Landing = () => {
       >
         <h2 className="landing__featured-title">Рекомендуемые курсы</h2>
         <p className="landing__featured-description">
-          От начинающих до продвинутых, для всех сфер — у нас есть подходящие курсы для вашего развития и успешного обучения.
+          От начинающих до продвинутых, для всех сфер — у нас есть подходящие
+          курсы для вашего развития и успешного обучения.
         </p>
 
         <div className="landing__tags">
@@ -126,7 +127,12 @@ const Landing = () => {
         </div>
 
         <div className="landing__courses">
-          {courses &&
+          {isError || !courses || courses.length === 0 ? (
+            <p className="landing__no-courses">
+              На данный момент курсов нет. Проверьте позже или создайте свой
+              курс!
+            </p>
+          ) : (
             courses.slice(0, 4).map((course, index) => (
               <motion.div
                 key={course.courseId}
@@ -140,7 +146,8 @@ const Landing = () => {
                   onClick={() => handleCourseClick(course.courseId)}
                 />
               </motion.div>
-            ))}
+            ))
+          )}
         </div>
       </motion.div>
     </motion.div>
