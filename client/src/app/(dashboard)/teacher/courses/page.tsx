@@ -53,17 +53,29 @@ const Courses = () => {
     }
   };
 
-  const handleCreateCourse = async () => {
-    if (!user) return;
+const handleCreateCourse = async () => {
+  if (!user) return;
 
+  try {
     const result = await createCourse({
       teacherId: user.id,
       teacherName: user.fullName || "Неизвестный преподаватель",
     }).unwrap();
-    router.push(`/teacher/courses/${result.courseId}`, {
-      scroll: false,
-    });
-  };
+    // Проверяем, что курс создан, и только тогда переходим
+    const checkCourse = await api
+      .endpoints.getCourse.initiate(result.courseId, { forceRefetch: true })
+      .unwrap();
+    if (checkCourse) {
+      router.push(`/teacher/courses/${result.courseId}`, {
+        scroll: false,
+      });
+    } else {
+      toast.error("Не удалось загрузить новый курс. Попробуйте ещё раз.");
+    }
+  } catch (error) {
+    toast.error("Ошибка при создании курса");
+  }
+};
 
   if (isLoading) return <Loading />;
 
