@@ -18,7 +18,7 @@ export const listTransactions = async (req: Request, res: Response): Promise<voi
   const { userId } = req.query;
 
   try {
-    let transactions;
+    let transactions: InstanceType<typeof Transaction>[]; // Явно указываем тип
     try {
       transactions = userId
         ? await Transaction.query("userId").eq(userId).exec()
@@ -35,7 +35,6 @@ export const listTransactions = async (req: Request, res: Response): Promise<voi
         try {
           course = await Course.get(transaction.courseId);
         } catch (courseError) {
-          // Если курс не найден, используем заглушку
           console.error(`Курс ${transaction.courseId} не найден:`, courseError);
         }
         return {
