@@ -26,8 +26,13 @@ const customBaseQuery = async (
     if (result.error) {
       const errorData = result.error.data;
       const status = result.error.status;
-      // Не показываем тосты для 404 или случаев, когда данных нет (пустой результат)
-      if (status !== 404 && errorData?.message && status !== 204) {
+      // Не показываем тосты для 404, 204 или случаев, когда данных нет
+      if (
+        status !== 404 &&
+        status !== 204 &&
+        errorData?.message &&
+        !args.toString().includes("users/course-progress")
+      ) {
         const errorMessage = errorData.message || "Произошла ошибка";
         toast.error(`Ошибка: ${errorMessage}`);
       }
@@ -63,7 +68,7 @@ const customBaseQuery = async (
 export const api = createApi({
   baseQuery: customBaseQuery,
   reducerPath: "api",
-  tagTags: ["Courses", "Users", "UserCourseProgress"],
+  tagTypes: ["Courses", "Users", "UserCourseProgress"], // Исправлено с "tagTags" на "tagTypes"
   endpoints: (build) => ({
     /* 
     ===============
