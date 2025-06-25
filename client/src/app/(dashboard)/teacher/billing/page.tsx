@@ -21,15 +21,40 @@ import { useGetTransactionsQuery } from "@/state/api";
 import { useUser } from "@clerk/nextjs";
 import React, { useState } from "react";
 
+// Список поддерживаемых карт для фильтра и отображения
+const CARD_TYPES = ["visa", "mastercard", "amex", "discover", "jcb", "diners"];
+
+const CARD_LABELS: Record<string, string> = {
+  visa: "Visa",
+  mastercard: "Mastercard",
+  amex: "American Express",
+  discover: "Discover",
+  jcb: "JCB",
+  diners: "Diners Club",
+};
+
 const TeacherBilling = () => {
-  const [cardBrand, setCardBrand] = useState("all");
+  const [paymentType, setPaymentType] = useState("all");
   const { user, isLoaded } = useUser();
   const { data: transactions, isLoading: isLoadingTransactions, error } = useGetTransactionsQuery(
-    { userId: user?.id || "", cardBrand },
+    { userId: user?.id || "", cardBrand: paymentType }, // Используем paymentType как cardBrand
     { skip: !isLoaded || !user }
   );
 
-  const filteredData = transactions || []; // Простая фильтрация, так как server уже фильтрует по cardBrand
+  // Фильтруем только транзакции по картам
+  const cardTransactions =
+    transactions?.filter((transaction) =>
+      CARD_TYPES.includes(transaction.paymentProvider)
+    ) || [];
+
+  // Фильтрация по типу карты
+  const filteredData =
+    cardTransactions.filter((transaction) => {
+      return (
+        paymentType === "all" ||
+        transaction.paymentProvider === paymentType
+      );
+    }) || [];
 
   if (!isLoaded) return <Loading />;
   if (!user) return <div>Войдите в систему чтобы посмотреть историю платежей.</div>;
@@ -40,18 +65,27 @@ const TeacherBilling = () => {
       <div className="billing__container">
         <h2 className="billing__title">История платежей</h2>
         <div className="billing__filters">
-          <Select value={cardBrand} onValueChange={setCardBrand}>
+          <Select value={paymentType} onValueChange={setPaymentType}>
             <SelectTrigger className="billing__select">
-              <SelectValue placeholder="Бренд карты" />
+              <SelectValue placeholder="Тип карты" />
             </SelectTrigger>
             <SelectContent className="billing__select-content">
-              <SelectItem className="billing__select-item" value="all">Все карты</SelectItem>
-              <SelectItem className="billing__select-item" value="visa">Visa</SelectItem>
-              <SelectItem className="billing__select-item" value="mastercard">MasterCard</SelectItem>
-              <SelectItem className="billing__select-item" value="amex">American Express</SelectItem>
+              <SelectItem className="billing__select-item" value="all">
+                Все карты
+              </SelectItem>
+              {CARD_TYPES.map((type) => (
+                <SelectItem
+                  className="billing__select-item"
+                  value={type}
+                  key={type}
+                >
+                  {CARD_LABELS[type] || type}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
+
         <div className="billing__grid">
           {isLoadingTransactions ? (
             <Loading />
@@ -61,8 +95,7 @@ const TeacherBilling = () => {
                 <TableRow className="billing__table-header-row">
                   <TableHead className="billing__table-cell">Дата</TableHead>
                   <TableHead className="billing__table-cell">Сумма</TableHead>
-                  <TableHead className="billing__table-cell">Способ оплаты</TableHead>
-                  <TableHead className="billing__table-cell">Бренд карты</TableHead>
+                  <TableHead className="billing__table-cell">Тип карты</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="billing__table-body">
@@ -79,10 +112,8 @@ const TeacherBilling = () => {
                         {formatPrice(transaction.amount)}
                       </TableCell>
                       <TableCell className="billing__table-cell">
-                        {transaction.paymentProvider}
-                      </TableCell>
-                      <TableCell className="billing__table-cell">
-                        {transaction.cardBrand || "N/A"}
+                        {CARD_LABELS[transaction.paymentProvider] ||
+                          transaction.paymentProvider}
                       </TableCell>
                     </TableRow>
                   ))
@@ -90,9 +121,9 @@ const TeacherBilling = () => {
                   <TableRow className="billing__table-row">
                     <TableCell
                       className="billing__table-cell text-center"
-                      colSpan={4}
+                      colSpan={3}
                     >
-                      Нет транзакций для отображения
+                      Нет транзакций по картам для отображения
                     </TableCell>
                   </TableRow>
                 )}

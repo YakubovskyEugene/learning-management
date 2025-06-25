@@ -1,3 +1,4 @@
+
 import Stripe from "stripe";
 import dotenv from "dotenv";
 import { Request, Response } from "express";
@@ -20,9 +21,9 @@ export const listTransactions = async (req: Request, res: Response): Promise<voi
   const { userId, cardBrand } = req.query;
 
   try {
-    let query = Transaction.query("userId").eq(userId);
-    if (cardBrand) {
-      query = query.where("cardBrand").eq(cardBrand);
+    let query = Transaction.query("userId").eq(userId as string);
+    if (cardBrand && cardBrand !== "all") {
+      query = query.where("cardBrand").eq(cardBrand as string);
     }
     const transactions = userId ? await query.exec() : await Transaction.scan().exec();
 
@@ -76,7 +77,7 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
   try {
     const course = await Course.get(courseId);
     let provider = paymentProvider;
-    let cardBrand: string | undefined;
+    let cardBrand: string = "неизвестно"; // Значение по умолчанию
 
     if (paymentProvider === "stripe" && transactionId) {
       try {
@@ -91,6 +92,7 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
         }
       } catch (stripeErr) {
         console.error("Ошибка при получении типа карты Stripe:", stripeErr);
+        // Продолжаем с cardBrand = "unknown"
       }
     }
 

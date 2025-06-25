@@ -30,7 +30,7 @@ const transactionSchema = new Schema(
     },
     cardBrand: { 
       type: String, 
-      required: true, 
+      required: false, 
     },
     amount: Number,
   },
