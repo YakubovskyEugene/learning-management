@@ -292,17 +292,28 @@ export const createCourseFormData = (
   sections: Section[]
 ): FormData => {
   const formData = new FormData();
+
+  // Базовые поля
   formData.append("title", data.courseTitle);
   formData.append("description", data.courseDescription);
   formData.append("category", data.courseCategory);
-  formData.append("price", data.coursePrice.toString());
-  formData.append("status", data.courseStatus ? "Опубликован" : "Черновик");
 
+  // Преобразование цены в центы
+  const priceInCents = parseInt(data.coursePrice) * 100;
+  if (isNaN(priceInCents)) {
+    throw new Error("Некорректный формат цены");
+  }
+  formData.append("price", priceInCents.toString());
+
+  // Статус в формате "Published"/"Draft"
+  formData.append("status", data.courseStatus ? "Published" : "Draft");
+
+  // Обработка секций
   const sectionsWithVideos = sections.map((section) => ({
     ...section,
     chapters: section.chapters.map((chapter) => ({
       ...chapter,
-      video: chapter.video,
+      video: chapter.video || null, // Устанавливаем null, если video отсутствует
     })),
   }));
 

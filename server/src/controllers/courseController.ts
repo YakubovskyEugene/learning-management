@@ -106,7 +106,6 @@ export const updateCourse = async (
   res: Response
 ): Promise<void> => {
   const { courseId } = req.params;
-  const updateData = { ...req.body };
   const { userId } = getAuth(req);
 
   try {
@@ -123,39 +122,44 @@ export const updateCourse = async (
       return;
     }
 
-    if (updateData.price) {
-      const price = parseInt(updateData.price);
-      if (isNaN(price)) {
-        res.status(400).json({
-          message: "Некорректный формат цены",
-          error: "Цена должна быть числом",
-        });
-        return;
+    const formData = req.body as FormData; // Приводим к FormData
+    const updateData: any = {};
+
+    // Извлекаем данные из FormData
+    for (const [key, value] of formData.entries()) {
+      if (key === "coursePrice") {
+        const price = parseInt(value as string);
+        if (isNaN(price)) {
+          res.status(400).json({
+            message: "Некорректный формат цены",
+            error: "Цена должна быть числом",
+          });
+          return;
+        }
+        updateData[key] = price * 100;
+      } else if (key === "sections") {
+        const sectionsData = JSON.parse(value as string);
+        updateData[key] = sectionsData.map((section: any) => ({
+          ...section,
+          sectionId: section.sectionId || uuidv4(),
+          chapters: section.chapters.map((chapter: any) => ({
+            ...chapter,
+            chapterId: chapter.chapterId || uuidv4(),
+          })),
+        }));
+      } else {
+        updateData[key] = value;
       }
-      updateData.price = price * 100;
     }
 
-    if (updateData.sections) {
-      const sectionsData =
-        typeof updateData.sections === "string"
-          ? JSON.parse(updateData.sections)
-          : updateData.sections;
-
-      updateData.sections = sectionsData.map((section: any) => ({
-        ...section,
-        sectionId: section.sectionId || uuidv4(),
-        chapters: section.chapters.map((chapter: any) => ({
-          ...chapter,
-          chapterId: chapter.chapterId || uuidv4(),
-        })),
-      }));
-    }
+    console.log("Обновляемые данные:", updateData); // Логируем данные для отладки
 
     Object.assign(course, updateData);
     await course.save();
 
     res.json({ message: "Курс успешно обновлён", data: course });
   } catch (error) {
+    console.error("Ошибка на сервере:", error);
     res.status(500).json({ message: "Ошибка при обновлении курса", error });
   }
 };
