@@ -25,11 +25,13 @@ const customBaseQuery = async (
 
     if (result.error) {
       const errorData = result.error.data;
-      const errorMessage =
-        errorData?.message ||
-        result.error.status.toString() ||
-        "Произошла ошибка";
-      toast.error(`Ошибка: ${errorMessage}`);
+      const status = result.error.status;
+      // Не показываем тосты для ошибок 404 или случаев, когда данные просто отсутствуют
+      if (status !== 404 && errorData?.message) {
+        const errorMessage = errorData.message || "Произошла ошибка";
+        toast.error(`Ошибка: ${errorMessage}`);
+      }
+      return result;
     }
 
     const isMutationRequest =
@@ -44,7 +46,7 @@ const customBaseQuery = async (
       result.data = result.data.data;
     } else if (
       result.error?.status === 204 ||
-      result.meta?.response?.status === 24
+      result.meta?.response?.status === 204
     ) {
       return { data: null };
     }
@@ -53,7 +55,8 @@ const customBaseQuery = async (
   } catch (error: unknown) {
     const errorMessage =
       error instanceof Error ? error.message : "Неизвестная ошибка";
-
+    // Показываем тост только для критических ошибок, а не для отсутствия данных
+    toast.error(`Критическая ошибка: ${errorMessage}`);
     return { error: { status: "FETCH_ERROR", error: errorMessage } };
   }
 };

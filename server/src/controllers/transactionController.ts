@@ -18,14 +18,26 @@ export const listTransactions = async (req: Request, res: Response): Promise<voi
   const { userId } = req.query;
 
   try {
-    const transactions = userId
-      ? await Transaction.query("userId").eq(userId).exec()
-      : await Transaction.scan().exec();
+    let transactions;
+    try {
+      transactions = userId
+        ? await Transaction.query("userId").eq(userId).exec()
+        : await Transaction.scan().exec();
+    } catch (dbError) {
+      // Если таблицы не существуют или данных нет, возвращаем пустой массив
+      transactions = [];
+    }
 
     // Получаем информацию о курсах для каждой транзакции
     const transactionsWithCourseTitle = await Promise.all(
       transactions.map(async (transaction) => {
-        const course = await Course.get(transaction.courseId);
+        let course;
+        try {
+          course = await Course.get(transaction.courseId);
+        } catch (courseError) {
+          // Если курс не найден, используем заглушку
+          console.error(`Курс ${transaction.courseId} не найден:`, courseError);
+        }
         return {
           ...transaction.toJSON(),
           courseTitle: course ? course.title : "Курс не найден",
@@ -38,7 +50,8 @@ export const listTransactions = async (req: Request, res: Response): Promise<voi
       data: transactionsWithCourseTitle,
     });
   } catch (error) {
-    res.status(500).json({ message: "Ошибка при получении транзакций", error });
+    console.error("Ошибка при получении транзакций:", error);
+    res.status(500).json({ message: "Ошибка сервера", data: [] });
   }
 };
 
