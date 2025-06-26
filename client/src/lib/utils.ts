@@ -3,12 +3,13 @@ import { twMerge } from "tailwind-merge";
 import * as z from "zod";
 import { api } from "../state/api";
 import { toast } from "sonner";
+import { useGetUploadVideoUrlMutation } from "@/state/api";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Преобразовать центы в форматированную строку валюты (например, 4999 -> "49,99 $")
+// Преобразовать центы в форматированную строку валюты (например, 4999 -> "49,99 $")
 export function formatPrice(cents: number | undefined): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -293,30 +294,29 @@ export const createCourseFormData = (
 ): FormData => {
   const formData = new FormData();
 
-  // Базовые поля
+  // Базовые поля (согласованы с сервером)
   formData.append("title", data.courseTitle);
   formData.append("description", data.courseDescription);
   formData.append("category", data.courseCategory);
 
-  // Преобразование цены в центы
+  // Цена в центах
   const priceInCents = parseInt(data.coursePrice) * 100;
   if (isNaN(priceInCents)) {
     throw new Error("Некорректный формат цены");
   }
   formData.append("price", priceInCents.toString());
 
-  // Статус в формате "Published"/"Draft"
+  // Статус
   formData.append("status", data.courseStatus ? "Published" : "Draft");
 
-  // Обработка секций
+  // Секции
   const sectionsWithVideos = sections.map((section) => ({
     ...section,
     chapters: section.chapters.map((chapter) => ({
       ...chapter,
-      video: chapter.video || null, // Устанавливаем null, если video отсутствует
+      video: chapter.video || null,
     })),
   }));
-
   formData.append("sections", JSON.stringify(sectionsWithVideos));
 
   return formData;
@@ -325,37 +325,44 @@ export const createCourseFormData = (
 export const uploadAllVideos = async (
   localSections: Section[],
   courseId: string,
-  getUploadVideoUrl: any
-) => {
-  const updatedSections = localSections.map((section) => ({
-    ...section,
-    chapters: section.chapters.map((chapter) => ({
-      ...chapter,
-    })),
-  }));
+  getUploadVideoUrl: ReturnType<typeof useGetUploadVideoUrlMutation>[0] // Используем тип хука
+): Promise<Section[]> => {
+  const updatedSections = await Promise.all(
+    localSections.map(async (section) => {
+      const updatedChapters = await Promise.all(
+        section.chapters.map(async (chapter) => {
+          if (chapter.video instanceof File && chapter.video.type === "video/mp4") {
+            try {
+              const [trigger] = useGetUploadVideoUrlMutation(); // Создаём экземпляр мутации
+              const result = await trigger({
+                courseId,
+                sectionId: section.sectionId,
+                chapterId: chapter.chapterId,
+                fileName: chapter.video.name,
+                fileType: chapter.video.type,
+              }).unwrap();
+              const { uploadUrl, videoUrl } = result; // TypeScript автоматически распознает тип
+              await fetch(uploadUrl, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": chapter.video.type,
+                },
+                body: chapter.video,
+              });
+              toast.success(`Видео успешно загружено для главы ${chapter.chapterId}`);
 
-  for (let i = 0; i < updatedSections.length; i++) {
-    for (let j = 0; j < updatedSections[i].chapters.length; j++) {
-      const chapter = updatedSections[i].chapters[j];
-      if (chapter.video instanceof File && chapter.video.type === "video/mp4") {
-        try {
-          const updatedChapter = await uploadVideo(
-            chapter,
-            courseId,
-            updatedSections[i].sectionId,
-            getUploadVideoUrl
-          );
-          updatedSections[i].chapters[j] = updatedChapter;
-        } catch (error) {
-          console.error(
-            `Не удалось загрузить видео для главы ${chapter.chapterId}:`,
-            error
-          );
-        }
-      }
-    }
-  }
-
+              return { ...chapter, video: videoUrl };
+            } catch (error) {
+              console.error(`Не удалось загрузить видео для главы ${chapter.chapterId}:`, error);
+              return { ...chapter, video: null };
+            }
+          }
+          return chapter;
+        })
+      );
+      return { ...section, chapters: updatedChapters };
+    })
+  );
   return updatedSections;
 };
 
@@ -363,19 +370,20 @@ async function uploadVideo(
   chapter: Chapter,
   courseId: string,
   sectionId: string,
-  getUploadVideoUrl: any
+  getUploadVideoUrl: ReturnType<typeof useGetUploadVideoUrlMutation>[0]
 ) {
   const file = chapter.video as File;
 
   try {
-    const { uploadUrl, videoUrl } = await getUploadVideoUrl({
+    const [trigger] = useGetUploadVideoUrlMutation();
+    const result = await trigger({
       courseId,
       sectionId,
       chapterId: chapter.chapterId,
       fileName: file.name,
       fileType: file.type,
     }).unwrap();
-
+    const { uploadUrl, videoUrl } = result;
     await fetch(uploadUrl, {
       method: "PUT",
       headers: {
@@ -383,16 +391,11 @@ async function uploadVideo(
       },
       body: file,
     });
-    toast.success(
-      `Видео успешно загружено для главы ${chapter.chapterId}`
-    );
+    toast.success(`Видео успешно загружено для главы ${chapter.chapterId}`);
 
     return { ...chapter, video: videoUrl };
   } catch (error) {
-    console.error(
-      `Не удалось загрузить видео для главы ${chapter.chapterId}:`,
-      error
-    );
+    console.error(`Не удалось загрузить видео для главы ${chapter.chapterId}:`, error);
     throw error;
   }
 }

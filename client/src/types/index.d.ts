@@ -109,15 +109,14 @@ declare global {
     timestamp: string;
   }
 
-  interface Chapter {
-    chapterId: string;
-    title: string;
-    content: string;
-    video?: string | File;
-    freePreview?: boolean;
-    type: "Text" | "Quiz" | "Video";
-  }
-
+interface Chapter {
+  chapterId: string;
+  title: string;
+  content: string;
+  video?: string | File | null; // Обновлено для поддержки null
+  freePreview?: boolean;
+  type: "Text" | "Quiz" | "Video";
+}
   interface ChapterProgress {
     chapterId: string;
     completed: boolean;
@@ -128,12 +127,12 @@ declare global {
     chapters: ChapterProgress[];
   }
 
-  interface Section {
-    sectionId: string;
-    sectionTitle: string;
-    sectionDescription?: string;
-    chapters: Chapter[];
-  }
+interface Section {
+  sectionId: string;
+  sectionTitle: string;
+  sectionDescription?: string;
+  chapters: Chapter[];
+}
 
   interface WizardStepperProps {
     currentStep: number;

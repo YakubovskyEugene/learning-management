@@ -25,7 +25,7 @@ import { useForm } from "react-hook-form";
 import DroppableComponent from "./Droppable";
 import ChapterModal from "./ChapterModal";
 import SectionModal from "./SectionModal";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 const CourseEditor = () => {
   const router = useRouter();
@@ -60,36 +60,36 @@ const CourseEditor = () => {
       });
       dispatch(setSections(course.sections || []));
     }
-  }, [course, methods, dispatch]); 
+  }, [course, methods, dispatch]);
 
   const onSubmit = async (data: CourseFormData) => {
-  try {
-    console.log("Данные формы:", data); // Логируем данные для отладки
-    const updatedSections = await uploadAllVideos(
-      sections,
-      id,
-      getUploadVideoUrl
-    );
-    console.log("Обновлённые секции:", updatedSections); // Логируем секции
+    try {
+      console.log("Данные формы перед отправкой:", data);
+      const [getUploadVideoUrlTrigger] = useGetUploadVideoUrlMutation(); // Явное имя для триггера
+      const updatedSections = await uploadAllVideos(sections, id, getUploadVideoUrlTrigger);
+      console.log("Обновлённые секции после uploadAllVideos:", updatedSections);
 
-    const formData = createCourseFormData(data, updatedSections);
-    console.log("FormData для отправки:", formData); // Логируем FormData
+      const formData = createCourseFormData(data, updatedSections);
+      console.log("FormData для отправки:", Object.fromEntries(formData));
 
-    await updateCourse({
-      courseId: id,
-      formData,
-    }).unwrap();
+      const response = await updateCourse({
+        courseId: id,
+        formData,
+      }).unwrap();
+      console.log("Ответ от сервера:", response);
 
-    toast.success("Курс успешно обновлён");
-    refetch();
-  } catch (error) {
-    console.error("Ошибка при обновлении курса:", error);
-    if (error instanceof Error) {
-      toast.error(`Ошибка: ${error.message}`);
-    } else {
-      toast.error("Неизвестная ошибка при обновлении курса");
+      toast.success("Курс успешно обновлён");
+      refetch();
+    } catch (error) {
+      console.error("Ошибка при обновлении курса (подробности):", error);
+      if (error instanceof Error) {
+        toast.error(`Ошибка: ${error.message}`);
+        console.error("Стек вызовов:", error.stack);
+      } else {
+        toast.error("Неизвестная ошибка при обновлении курса");
+        console.error("Неизвестная ошибка:", error);
+      }
     }
-  }
   };
 
   return (
@@ -165,7 +165,7 @@ const CourseEditor = () => {
                     { value: "science", label: "Наука" },
                     { value: "mathematics", label: "Математика" },
                     {
-                      value: "Artificial Intelligence",
+                      value: "artificial-intelligence",
                       label: "Искусственный интеллект",
                     },
                   ]}
