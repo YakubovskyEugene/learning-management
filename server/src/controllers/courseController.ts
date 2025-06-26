@@ -93,6 +93,10 @@ export const updateCourse = async (req: Request, res: Response): Promise<void> =
   const { courseId } = req.params;
   const { userId } = getAuth(req);
 
+  // Временное логирование для отладки
+  console.log("Request body:", req.body);
+  console.log("Request files:", req.files);
+
   try {
     const course = await Course.get(courseId);
     if (!course) {

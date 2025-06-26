@@ -71,11 +71,16 @@ const CourseEditor = () => {
     console.log("Обновлённые секции после uploadAllVideos:", updatedSections);
 
     const formData = createCourseFormData(data, updatedSections);
-    console.log("FormData для отправки (сырой):", formData); // Логируем FormData как есть
+    console.log("FormData для отправки (сырой):", formData);
+
+    // Логирование содержимого FormData
+    for (const pair of formData.entries()) {
+      console.log(`FormData entry: ${pair[0]} = ${pair[1]}`);
+    }
 
     const response = await updateCourse({
       courseId: id,
-      formData, // Передаём FormData напрямую
+      formData,
     }).unwrap();
     console.log("Ответ от сервера:", response);
 
