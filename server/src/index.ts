@@ -12,6 +12,8 @@ import {
   createClerkClient,
   requireAuth,
 } from "@clerk/express";
+import multer from "multer"; // Добавлен multer
+
 /* ИМПОРТЫ МАРШРУТОВ */
 import courseRoutes from "./routes/courseRoutes";
 import userClerkRoutes from "./routes/userClerkRoutes";
@@ -30,6 +32,11 @@ export const clerkClient = createClerkClient({
 });
 
 const app = express();
+
+// Настройка multer для обработки FormData
+const upload = multer();
+
+// Middleware
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -39,12 +46,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 app.use(clerkMiddleware());
 
+// Применяем multer к маршруту courses
+app.use("/courses", upload.any(), courseRoutes); // Добавлено upload.any()
+
 /* МАРШРУТЫ */
 app.get("/", (req, res) => {
   res.send("Привет! Сервер работает.");
 });
 
-app.use("/courses", courseRoutes);
 app.use("/users/clerk", requireAuth(), userClerkRoutes);
 app.use("/transactions", requireAuth(), transactionRoutes);
 app.use("/users/course-progress", requireAuth(), userCourseProgressRoutes);
@@ -53,7 +62,7 @@ app.use("/users/course-progress", requireAuth(), userCourseProgressRoutes);
 const port = process.env.PORT || 3000;
 if (!isProduction) {
   app.listen(port, () => {
-    console.log(`Сервер запущен на порту ${port}`); 
+    console.log(`Сервер запущен на порту ${port}`);
   });
 }
 
@@ -64,7 +73,7 @@ export const handler = async (event: any, context: any) => {
     await seed();
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "Данные успешно загружены" }), 
+      body: JSON.stringify({ message: "Данные успешно загружены" }),
     };
   } else {
     return serverlessApp(event, context);

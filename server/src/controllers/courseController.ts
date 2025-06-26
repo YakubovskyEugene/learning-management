@@ -101,10 +101,7 @@ export const createCourse = async (
   }
 };
 
-export const updateCourse = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const updateCourse = async (req: Request, res: Response): Promise<void> => {
   const { courseId } = req.params;
   const { userId } = getAuth(req);
 
@@ -120,25 +117,54 @@ export const updateCourse = async (
       return;
     }
 
-    const formData = req.body as FormData;
+    // Проверяем, является ли req.body FormData или объектом
+    const formData = req.body as FormData | Record<string, any>;
     const updateData: any = {};
 
-    for (const [key, value] of formData.entries()) {
-      if (key === "title") updateData["title"] = value as string;
-      else if (key === "description") updateData["description"] = value as string;
-      else if (key === "category") updateData["category"] = value as string;
-      else if (key === "price") {
-        const price = parseInt(value as string);
-        if (isNaN(price)) {
+    if (formData instanceof FormData) {
+      // Обработка FormData
+      for (const [key, value] of formData.entries()) {
+        if (key === "title") updateData["title"] = value as string;
+        else if (key === "description") updateData["description"] = value as string;
+        else if (key === "category") updateData["category"] = value as string;
+        else if (key === "price") {
+          const price = parseInt(value as string);
+          if (isNaN(price)) {
+            res.status(400).json({ message: "Некорректный формат цены" });
+            return;
+          }
+          updateData["price"] = price;
+        } else if (key === "status") {
+          updateData["status"] = value === "Published" ? "Published" : "Draft";
+        } else if (key === "sections") {
+          const sectionsData = value ? JSON.parse(value as string) : [];
+          updateData["sections"] = sectionsData.map((section: any) => ({
+            ...section,
+            sectionId: section.sectionId || uuidv4(),
+            chapters: section.chapters.map((chapter: any) => ({
+              ...chapter,
+              chapterId: chapter.chapterId || uuidv4(),
+            })),
+          }));
+        }
+      }
+    } else {
+      // Обработка JSON
+      const { title, description, category, price, status, sections } = formData;
+      if (title) updateData["title"] = title;
+      if (description) updateData["description"] = description;
+      if (category) updateData["category"] = category;
+      if (price) {
+        const priceNum = parseInt(price);
+        if (isNaN(priceNum)) {
           res.status(400).json({ message: "Некорректный формат цены" });
           return;
         }
-        updateData["price"] = price;
-      } else if (key === "status") {
-        updateData["status"] = value === "Published" ? "Published" : "Draft";
-      } else if (key === "sections") {
-        const sectionsData = value ? JSON.parse(value as string) : [];
-        updateData["sections"] = sectionsData.map((section: any) => ({
+        updateData["price"] = priceNum;
+      }
+      if (status) updateData["status"] = status === "Published" ? "Published" : "Draft";
+      if (sections) {
+        updateData["sections"] = sections.map((section: any) => ({
           ...section,
           sectionId: section.sectionId || uuidv4(),
           chapters: section.chapters.map((chapter: any) => ({
