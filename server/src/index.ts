@@ -42,8 +42,7 @@ app.use((req, res, next) => {
   if (req.path.startsWith('/courses') && req.method === 'PUT') {
     return next(); // Пропускаем bodyParser для PUT /courses
   }
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: false }));
+  // Здесь bodyParser больше не нужен, так как мы убрали его использование
   next();
 });
 
@@ -51,7 +50,7 @@ app.use((req, res, next) => {
 app.use(clerkMiddleware());
 
 // Настраиваем маршрут /courses с multer
-app.use("/courses", requireAuth(), upload.any(), courseRoutes); // upload.any() для всех полей FormData
+app.use("/courses", requireAuth(), upload.any(), courseRoutes);
 
 /* МАРШРУТЫ */
 app.get("/", (req, res) => {
