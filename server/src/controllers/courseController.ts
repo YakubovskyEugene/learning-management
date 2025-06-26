@@ -16,12 +16,10 @@ export const listCourses = async (
   try {
     let courses;
     if (teacherView && userId) {
-      // Возвращаем все курсы преподавателя, включая черновики, если teacherView=true
       courses = await Course.scan("teacherId")
         .eq(userId)
         .exec();
     } else {
-      // Для всех остальных случаев (например, студентов) возвращаем только опубликованные курсы
       courses =
         category && category !== "all"
           ? await Course.scan("category")
@@ -117,39 +115,41 @@ export const updateCourse = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    // Проверяем, является ли req.body FormData или объектом
     const formData = req.body as FormData | Record<string, any>;
     const updateData: any = {};
 
     if (formData instanceof FormData) {
-      // Обработка FormData
       for (const [key, value] of formData.entries()) {
-        if (key === "title") updateData["title"] = value as string;
-        else if (key === "description") updateData["description"] = value as string;
-        else if (key === "category") updateData["category"] = value as string;
-        else if (key === "price") {
+        if (key === "title" && value) updateData["title"] = value as string;
+        else if (key === "description" && value) updateData["description"] = value as string;
+        else if (key === "category" && value) updateData["category"] = value as string;
+        else if (key === "price" && value) {
           const price = parseInt(value as string);
           if (isNaN(price)) {
             res.status(400).json({ message: "Некорректный формат цены" });
             return;
           }
           updateData["price"] = price;
-        } else if (key === "status") {
+        } else if (key === "status" && value) {
           updateData["status"] = value === "Published" ? "Published" : "Draft";
-        } else if (key === "sections") {
-          const sectionsData = value ? JSON.parse(value as string) : [];
-          updateData["sections"] = sectionsData.map((section: any) => ({
-            ...section,
-            sectionId: section.sectionId || uuidv4(),
-            chapters: section.chapters.map((chapter: any) => ({
-              ...chapter,
-              chapterId: chapter.chapterId || uuidv4(),
-            })),
-          }));
+        } else if (key === "sections" && value) {
+          try {
+            const sectionsData = JSON.parse(value as string);
+            updateData["sections"] = sectionsData.map((section: any) => ({
+              ...section,
+              sectionId: section.sectionId || uuidv4(),
+              chapters: section.chapters.map((chapter: any) => ({
+                ...chapter,
+                chapterId: chapter.chapterId || uuidv4(),
+              })),
+            }));
+          } catch (e) {
+            res.status(400).json({ message: "Некорректный формат секций" });
+            return;
+          }
         }
       }
     } else {
-      // Обработка JSON
       const { title, description, category, price, status, sections } = formData;
       if (title) updateData["title"] = title;
       if (description) updateData["description"] = description;

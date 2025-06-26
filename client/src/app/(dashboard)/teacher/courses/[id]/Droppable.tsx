@@ -34,11 +34,14 @@ export default function DroppableComponent() {
     const startIndex = result.source.index;
     const endIndex = result.destination.index;
 
-    const updatedSections = [...sections];
-    const updatedChapters = [...updatedSections[sectionIndex].chapters];
+    const updatedSections = [...sections]; // Копия секций
+    const updatedChapters = [...updatedSections[sectionIndex].chapters]; // Копия chapters
     const [reorderedChapter] = updatedChapters.splice(startIndex, 1);
     updatedChapters.splice(endIndex, 0, reorderedChapter);
-    updatedSections[sectionIndex].chapters = updatedChapters;
+    updatedSections[sectionIndex] = {
+      ...updatedSections[sectionIndex],
+      chapters: updatedChapters, // Обновляем chapters с копией
+    };
     dispatch(setSections(updatedSections));
   };
 

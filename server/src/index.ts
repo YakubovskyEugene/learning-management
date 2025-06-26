@@ -37,17 +37,20 @@ const app = express();
 const upload = multer();
 
 // Middleware
-app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
+app.use(cors());
+
+// Применяем bodyParser только для маршрутов, не связанных с FormData
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors());
+
+// Применяем clerkMiddleware до маршрутов
 app.use(clerkMiddleware());
 
-// Применяем multer к маршруту courses
-app.use("/courses", upload.any(), courseRoutes); // Добавлено upload.any()
+// Настраиваем маршрут /courses с multer
+app.use("/courses", requireAuth(), upload.any(), courseRoutes); // upload.any() обрабатывает FormData
 
 /* МАРШРУТЫ */
 app.get("/", (req, res) => {
