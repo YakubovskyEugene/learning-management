@@ -76,9 +76,6 @@ const CourseEditor = () => {
     const response = await updateCourse({
       courseId: id,
       formData, // Передаём FormData напрямую
-    }, {
-      // Опции для мутации
-      formData: true, // Указываем, что это FormData
     }).unwrap();
     console.log("Ответ от сервера:", response);
 

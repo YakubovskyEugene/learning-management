@@ -16,6 +16,7 @@ const customBaseQuery = async (
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
+      // Не устанавливаем Content-Type для FormData, чтобы браузер сделал это автоматически
       return headers;
     },
   });
@@ -26,7 +27,6 @@ const customBaseQuery = async (
     if (result.error) {
       const errorData = result.error.data;
       const status = result.error.status;
-      // Не показываем тосты для 404, 204 или случаев, когда данных нет
       if (
         status !== 404 &&
         status !== 204 &&
@@ -55,9 +55,7 @@ const customBaseQuery = async (
 
     return result;
   } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Неизвестная ошибка";
-    // Показываем тост только для критических ошибок, не связанных с отсутствием данных
+    const errorMessage = error instanceof Error ? error.message : "Неизвестная ошибка";
     if (!(errorMessage.includes("404") || errorMessage.includes("Not Found"))) {
       toast.error(`Критическая ошибка: ${errorMessage}`);
     }
@@ -68,7 +66,7 @@ const customBaseQuery = async (
 export const api = createApi({
   baseQuery: customBaseQuery,
   reducerPath: "api",
-  tagTypes: ["Courses", "Users", "UserCourseProgress"], // Исправлено с "tagTags" на "tagTypes"
+  tagTypes: ["Courses", "Users", "UserCourseProgress"],
   endpoints: (build) => ({
     /* 
     ===============
@@ -114,14 +112,15 @@ export const api = createApi({
   invalidatesTags: ["Courses"],
 }),
 
-    updateCourse: build.mutation<
-      Course,
-      { courseId: string; formData: FormData }
-    >({
+    updateCourse: build.mutation<Course, { courseId: string; formData: FormData }>({
       query: ({ courseId, formData }) => ({
         url: `courses/${courseId}`,
         method: "PUT",
         body: formData,
+        // Указываем, что это FormData, отключаем JSON-сериализацию
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       }),
       invalidatesTags: (result, error, { courseId }) => [
         { type: "Courses", id: courseId },
