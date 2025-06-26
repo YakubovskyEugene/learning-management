@@ -1,18 +1,13 @@
 import express from "express";
 import dotenv from "dotenv";
-import bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import * as dynamoose from "dynamoose";
 import serverless from "serverless-http";
 import seed from "./seed/seedDynamodb";
-import {
-  clerkMiddleware,
-  createClerkClient,
-  requireAuth,
-} from "@clerk/express";
-import multer from "multer"; // Добавлен multer
+import { clerkMiddleware, createClerkClient, requireAuth } from "@clerk/express";
+import multer from "multer";
 
 /* ИМПОРТЫ МАРШРУТОВ */
 import courseRoutes from "./routes/courseRoutes";
@@ -34,7 +29,7 @@ export const clerkClient = createClerkClient({
 const app = express();
 
 // Настройка multer для обработки FormData
-const upload = multer();
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Middleware
 app.use(helmet());
@@ -42,15 +37,21 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(cors());
 
-// Применяем bodyParser только для маршрутов, не связанных с FormData
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+// Применяем bodyParser только к маршрутам, не использующим multipart
+app.use((req, res, next) => {
+  if (req.path.startsWith('/courses') && req.method === 'PUT') {
+    return next(); // Пропускаем bodyParser для PUT /courses
+  }
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: false }));
+  next();
+});
 
 // Применяем clerkMiddleware до маршрутов
 app.use(clerkMiddleware());
 
 // Настраиваем маршрут /courses с multer
-app.use("/courses", requireAuth(), upload.any(), courseRoutes); // upload.any() обрабатывает FormData
+app.use("/courses", requireAuth(), upload.any(), courseRoutes); // upload.any() для всех полей FormData
 
 /* МАРШРУТЫ */
 app.get("/", (req, res) => {
