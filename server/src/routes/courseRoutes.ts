@@ -1,5 +1,4 @@
 import express from "express";
-import multer from "multer";
 import {
   createCourse,
   deleteCourse,
@@ -11,13 +10,12 @@ import {
 import { requireAuth } from "@clerk/express";
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/", listCourses);
 router.post("/", requireAuth(), createCourse);
 
 router.get("/:courseId", getCourse);
-router.put("/:courseId", requireAuth(), upload.any(), updateCourse); // Изменили на upload.any()
+router.put("/:courseId", requireAuth(), updateCourse);
 router.delete("/:courseId", requireAuth(), deleteCourse);
 
 router.post(

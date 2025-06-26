@@ -7,15 +7,12 @@ import * as dynamoose from "dynamoose";
 import serverless from "serverless-http";
 import seed from "./seed/seedDynamodb";
 import { clerkMiddleware, createClerkClient, requireAuth } from "@clerk/express";
-import multer from "multer";
 
-/* ИМПОРТЫ МАРШРУТОВ */
 import courseRoutes from "./routes/courseRoutes";
 import userClerkRoutes from "./routes/userClerkRoutes";
 import transactionRoutes from "./routes/transactionRoutes";
 import userCourseProgressRoutes from "./routes/userCourseProgressRoutes";
 
-/* КОНФИГУРАЦИЯ */
 dotenv.config();
 const isProduction = process.env.NODE_ENV === "production";
 if (!isProduction) {
@@ -28,31 +25,16 @@ export const clerkClient = createClerkClient({
 
 const app = express();
 
-// Настройка multer для обработки FormData
-const upload = multer({ storage: multer.memoryStorage() });
-
-// Middleware
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(cors());
+app.use(express.json()); // Добавляем парсер JSON
 
-// Применяем bodyParser только к маршрутам, не использующим multipart
-app.use((req, res, next) => {
-  if (req.path.startsWith('/courses') && req.method === 'PUT') {
-    return next(); // Пропускаем bodyParser для PUT /courses
-  }
-  // Здесь bodyParser больше не нужен, так как мы убрали его использование
-  next();
-});
-
-// Применяем clerkMiddleware до маршрутов
 app.use(clerkMiddleware());
 
-// Настраиваем маршрут /courses с multer
-app.use("/courses", requireAuth(), upload.any(), courseRoutes);
+app.use("/courses", requireAuth(), courseRoutes);
 
-/* МАРШРУТЫ */
 app.get("/", (req, res) => {
   res.send("Привет! Сервер работает.");
 });
@@ -61,7 +43,6 @@ app.use("/users/clerk", requireAuth(), userClerkRoutes);
 app.use("/transactions", requireAuth(), transactionRoutes);
 app.use("/users/course-progress", requireAuth(), userCourseProgressRoutes);
 
-/* СЕРВЕР */
 const port = process.env.PORT || 3000;
 if (!isProduction) {
   app.listen(port, () => {
@@ -69,7 +50,6 @@ if (!isProduction) {
   });
 }
 
-// AWS production environment
 const serverlessApp = serverless(app);
 export const handler = async (event: any, context: any) => {
   if (event.action === "seed") {

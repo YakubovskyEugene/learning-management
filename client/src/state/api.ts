@@ -1,7 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { BaseQueryApi, FetchArgs } from "@reduxjs/toolkit/query";
 import { User } from "@clerk/nextjs/server";
-import { Clerk } from "@clerk/clerk-js";
 import { toast } from "sonner";
 
 const customBaseQuery = async (
@@ -16,7 +15,6 @@ const customBaseQuery = async (
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
-      // Не устанавливаем Content-Type для FormData, чтобы браузер сделал это автоматически
       return headers;
     },
   });
@@ -68,11 +66,6 @@ export const api = createApi({
   reducerPath: "api",
   tagTypes: ["Courses", "Users", "UserCourseProgress"],
   endpoints: (build) => ({
-    /* 
-    ===============
-    USER CLERK
-    =============== 
-    */
     updateUser: build.mutation<User, Partial<User> & { userId: string }>({
       query: ({ userId, ...updatedUser }) => ({
         url: `users/clerk/${userId}`,
@@ -82,46 +75,41 @@ export const api = createApi({
       invalidatesTags: ["Users"],
     }),
 
-    /* 
-    ===============
-    КУРСЫ
-    =============== 
-    */
     getCourses: build.query<Course[], { category?: string; teacherView?: boolean }>({
-  query: ({ category, teacherView }) => ({
-    url: "courses",
-    params: { category, teacherView },
-  }),
-  providesTags: ["Courses"],
-}),
+      query: ({ category, teacherView }) => ({
+        url: "courses",
+        params: { category, teacherView },
+      }),
+      providesTags: ["Courses"],
+    }),
 
     getCourse: build.query<Course, string>({
       query: (id) => `courses/${id}`,
       providesTags: (result, error, id) => [{ type: "Courses", id }],
     }),
 
-    createCourse: build.mutation<
-  Course,
-  Partial<Course> // Изменяем тип на Partial<Course>
->({
-  query: (body) => ({
-    url: `courses`,
-    method: "POST",
-    body,
-  }),
-  invalidatesTags: ["Courses"],
-}),
+    createCourse: build.mutation<Course, Partial<Course>>({
+      query: (body) => ({
+        url: `courses`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Courses"],
+    }),
 
-updateCourse: build.mutation<Course, { courseId: string; formData: FormData }>({
-  query: ({ courseId, formData }) => ({
-    url: `courses/${courseId}`,
-    method: "PUT",
-    body: formData,
-  }),
-  invalidatesTags: (result, error, { courseId }) => [
-    { type: "Courses", id: courseId },
-  ],
-}),
+    updateCourse: build.mutation<Course, { courseId: string; data: any }>({
+      query: ({ courseId, data }) => ({
+        url: `courses/${courseId}`,
+        method: "PUT",
+        body: data,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: (result, error, { courseId }) => [
+        { type: "Courses", id: courseId },
+      ],
+    }),
 
     deleteCourse: build.mutation<{ message: string }, string>({
       query: (courseId) => ({
@@ -148,14 +136,10 @@ updateCourse: build.mutation<Course, { courseId: string; formData: FormData }>({
       }),
     }),
 
-    /* 
-    ===============
-    ТРАНЗАКЦИИ
-    =============== 
-    */
     getTransactions: build.query<Transaction[], string>({
       query: (userId) => `transactions?userId=${userId}`,
     }),
+
     createStripePaymentIntent: build.mutation<
       { clientSecret: string },
       { amount: number }
@@ -166,6 +150,7 @@ updateCourse: build.mutation<Course, { courseId: string; formData: FormData }>({
         body: { amount },
       }),
     }),
+
     createTransaction: build.mutation<Transaction, Partial<Transaction>>({
       query: (transaction) => ({
         url: "transactions",
@@ -174,11 +159,6 @@ updateCourse: build.mutation<Course, { courseId: string; formData: FormData }>({
       }),
     }),
 
-    /* 
-    ===============
-    ПРОГРЕСС ПОЛЬЗОВАТЕЛЯ В КУРСАХ
-    =============== 
-    */
     getUserEnrolledCourses: build.query<Course[], string>({
       query: (userId) => `users/course-progress/${userId}/enrolled-courses`,
       providesTags: ["Courses", "UserCourseProgress"],

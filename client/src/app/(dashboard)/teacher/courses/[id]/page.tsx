@@ -63,40 +63,35 @@ const CourseEditor = () => {
   }, [course, methods, dispatch]);
 
   const onSubmit = async (data: CourseFormData) => {
-  try {
-    console.log("Данные формы перед отправкой:", data);
-    const updatedSections = await uploadAllVideos(sections, id, (args) =>
-      getUploadVideoUrlTrigger(args).unwrap()
-    );
-    console.log("Обновлённые секции после uploadAllVideos:", updatedSections);
+    try {
+      console.log("Данные формы перед отправкой:", data);
+      const updatedSections = await uploadAllVideos(sections, id, (args) =>
+        getUploadVideoUrlTrigger(args).unwrap()
+      );
+      console.log("Обновлённые секции после uploadAllVideos:", updatedSections);
 
-    const formData = createCourseFormData(data, updatedSections);
-    console.log("FormData для отправки (сырой):", formData);
+      const courseData = createCourseFormData(data, updatedSections);
+      console.log("Данные для отправки:", courseData);
 
-    // Логирование содержимого FormData
-    for (const pair of formData.entries()) {
-      console.log(`FormData entry: ${pair[0]} = ${pair[1]}`);
+      const response = await updateCourse({
+        courseId: id,
+        data: courseData,
+      }).unwrap();
+      console.log("Ответ от сервера:", response);
+
+      toast.success("Курс успешно обновлён");
+      refetch();
+    } catch (error) {
+      console.error("Ошибка при обновлении курса (подробности):", error);
+      if (error instanceof Error) {
+        toast.error(`Ошибка: ${error.message}`);
+        console.error("Стек вызовов:", error.stack);
+      } else {
+        toast.error("Неизвестная ошибка при обновлении курса");
+        console.error("Неизвестная ошибка:", error);
+      }
     }
-
-    const response = await updateCourse({
-      courseId: id,
-      formData,
-    }).unwrap();
-    console.log("Ответ от сервера:", response);
-
-    toast.success("Курс успешно обновлён");
-    refetch();
-  } catch (error) {
-    console.error("Ошибка при обновлении курса (подробности):", error);
-    if (error instanceof Error) {
-      toast.error(`Ошибка: ${error.message}`);
-      console.error("Стек вызовов:", error.stack);
-    } else {
-      toast.error("Неизвестная ошибка при обновлении курса");
-      console.error("Неизвестная ошибка:", error);
-    }
-  }
-};
+  };
 
   return (
     <div>

@@ -93,9 +93,7 @@ export const updateCourse = async (req: Request, res: Response): Promise<void> =
   const { courseId } = req.params;
   const { userId } = getAuth(req);
 
-  // Временное логирование для отладки
-  console.log("Request body:", req.body);
-  console.log("Request files:", req.files);
+  console.log("Request body:", JSON.stringify(req.body, null, 2));
 
   try {
     const course = await Course.get(courseId);
@@ -109,42 +107,48 @@ export const updateCourse = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const formData = req.body as any; // Используем any, так как данные приходят из FormData
-    const updateData: any = {};
+    const { title, description, category, price, status, sections } = req.body;
 
-    // Извлекаем данные из FormData
-    for (const [key, value] of Object.entries(formData)) {
-      if (key === "title" && value) updateData["title"] = value as string;
-      else if (key === "description" && value) updateData["description"] = value as string;
-      else if (key === "category" && value) updateData["category"] = value as string;
-      else if (key === "price" && value) {
-        const price = parseInt(value as string);
-        if (isNaN(price)) {
-          res.status(400).json({ message: "Некорректный формат цены" });
-          return;
-        }
-        updateData["price"] = price;
-      } else if (key === "status" && value) {
-        updateData["status"] = value === "Published" ? "Published" : "Draft";
-      } else if (key === "sections" && value) {
-        try {
-          const sectionsData = JSON.parse(value as string);
-          updateData["sections"] = sectionsData.map((section: any) => ({
-            ...section,
-            sectionId: section.sectionId || uuidv4(),
-            chapters: section.chapters.map((chapter: any) => ({
-              ...chapter,
-              chapterId: chapter.chapterId || uuidv4(),
-            })),
-          }));
-        } catch (e) {
-          res.status(400).json({ message: "Некорректный формат секций" });
-          return;
-        }
-      }
+    // Валидация полей
+    if (!title || !description || !category || price == null || !status || !sections) {
+      res.status(400).json({ message: "Все поля обязательны" });
+      return;
     }
 
-    Object.assign(course, updateData);
+    // Проверка формата цены
+    const priceValue = Number(price);
+    if (isNaN(priceValue)) {
+      res.status(400).json({ message: "Некорректный формат цены" });
+      return;
+    }
+
+    // Проверка статуса
+    if (!["Published", "Draft"].includes(status)) {
+      res.status(400).json({ message: "Некорректный статус курса" });
+      return;
+    }
+
+    // Проверка секций
+    if (!Array.isArray(sections)) {
+      res.status(400).json({ message: "Секции должны быть массивом" });
+      return;
+    }
+
+    // Обновление данных курса
+    course.title = title;
+    course.description = description;
+    course.category = category;
+    course.price = priceValue;
+    course.status = status;
+    course.sections = sections.map((section: any) => ({
+      ...section,
+      sectionId: section.sectionId || uuidv4(),
+      chapters: section.chapters.map((chapter: any) => ({
+        ...chapter,
+        chapterId: chapter.chapterId || uuidv4(),
+      })),
+    }));
+
     await course.save();
 
     res.json({ message: "Курс успешно обновлён", data: course });
