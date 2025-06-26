@@ -33,7 +33,7 @@ const CourseEditor = () => {
   const id = params.id as string;
   const { data: course, isLoading, refetch } = useGetCourseQuery(id);
   const [updateCourse] = useUpdateCourseMutation();
-  const [getUploadVideoUrl] = useGetUploadVideoUrlMutation();
+  const [getUploadVideoUrlTrigger] = useGetUploadVideoUrlMutation();
 
   const dispatch = useAppDispatch();
   const { sections } = useAppSelector((state) => state.global.courseEditor);
@@ -65,8 +65,9 @@ const CourseEditor = () => {
   const onSubmit = async (data: CourseFormData) => {
     try {
       console.log("Данные формы перед отправкой:", data);
-      const [getUploadVideoUrlTrigger] = useGetUploadVideoUrlMutation(); // Явное имя для триггера
-      const updatedSections = await uploadAllVideos(sections, id, getUploadVideoUrlTrigger);
+      const updatedSections = await uploadAllVideos(sections, id, (args) =>
+        getUploadVideoUrlTrigger(args).unwrap()
+      );
       console.log("Обновлённые секции после uploadAllVideos:", updatedSections);
 
       const formData = createCourseFormData(data, updatedSections);

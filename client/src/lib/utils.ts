@@ -325,7 +325,13 @@ export const createCourseFormData = (
 export const uploadAllVideos = async (
   localSections: Section[],
   courseId: string,
-  getUploadVideoUrl: ReturnType<typeof useGetUploadVideoUrlMutation>[0] // Используем тип хука
+  getUploadVideoUrl: (args: {
+    courseId: string;
+    sectionId: string;
+    chapterId: string;
+    fileName: string;
+    fileType: string;
+  }) => Promise<{ uploadUrl: string; videoUrl: string }> // Изменили тип на прямой результат .unwrap()
 ): Promise<Section[]> => {
   const updatedSections = await Promise.all(
     localSections.map(async (section) => {
@@ -333,15 +339,13 @@ export const uploadAllVideos = async (
         section.chapters.map(async (chapter) => {
           if (chapter.video instanceof File && chapter.video.type === "video/mp4") {
             try {
-              const [trigger] = useGetUploadVideoUrlMutation(); // Создаём экземпляр мутации
-              const result = await trigger({
+              const { uploadUrl, videoUrl } = await getUploadVideoUrl({
                 courseId,
                 sectionId: section.sectionId,
                 chapterId: chapter.chapterId,
                 fileName: chapter.video.name,
                 fileType: chapter.video.type,
-              }).unwrap();
-              const { uploadUrl, videoUrl } = result; // TypeScript автоматически распознает тип
+              });
               await fetch(uploadUrl, {
                 method: "PUT",
                 headers: {
@@ -370,20 +374,24 @@ async function uploadVideo(
   chapter: Chapter,
   courseId: string,
   sectionId: string,
-  getUploadVideoUrl: ReturnType<typeof useGetUploadVideoUrlMutation>[0]
+  getUploadVideoUrl: (args: {
+    courseId: string;
+    sectionId: string;
+    chapterId: string;
+    fileName: string;
+    fileType: string;
+  }) => Promise<{ uploadUrl: string; videoUrl: string }> // Изменили тип
 ) {
   const file = chapter.video as File;
 
   try {
-    const [trigger] = useGetUploadVideoUrlMutation();
-    const result = await trigger({
+    const { uploadUrl, videoUrl } = await getUploadVideoUrl({
       courseId,
       sectionId,
       chapterId: chapter.chapterId,
       fileName: file.name,
       fileType: file.type,
-    }).unwrap();
-    const { uploadUrl, videoUrl } = result;
+    });
     await fetch(uploadUrl, {
       method: "PUT",
       headers: {
