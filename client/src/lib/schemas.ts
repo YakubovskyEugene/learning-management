@@ -4,11 +4,13 @@ import * as z from "zod";
 export const courseSchema = z.object({
   courseTitle: z.string().min(1, "Требуется название"),
   courseDescription: z.string().min(1, "Требуется описание"),
-  courseCategory: z.string().min(1, "Требуется категория"),
+  courseCategory: z
+    .string()
+    .min(1, "Требуется категория")
+    .regex(/^[a-zA-Z0-9-]+$/, "Категория может содержать только буквы, цифры и дефисы"),
   coursePrice: z.string(),
   courseStatus: z.boolean(),
 });
-
 export type CourseFormData = z.infer<typeof courseSchema>;
 
 // Схемы главы
