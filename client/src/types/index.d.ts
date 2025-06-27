@@ -4,8 +4,8 @@ export interface CourseFormData {
   courseCategory: string;
   coursePrice: string;
   courseStatus: boolean;
+  courseImage: File | undefined;
 }
-
 declare global {
   interface PaymentMethod {
     methodId: string;

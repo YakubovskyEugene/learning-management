@@ -89,6 +89,21 @@ export const api = createApi({
     КУРСЫ
     =============== 
     */
+   getUploadImageUrl: build.mutation<
+      { uploadUrl: string; imageUrl: string },
+      {
+        courseId: string;
+        fileName: string;
+        fileType: string;
+      }
+    >({
+      query: ({ courseId, fileName, fileType }) => ({
+        url: `courses/${courseId}/get-upload-image-url`,
+        method: "POST",
+        body: { fileName, fileType },
+      }),
+    }),
+
     getCourses: build.query<Course[], { category?: string; teacherView?: boolean }>({
   query: ({ category, teacherView }) => ({
     url: "courses",
@@ -253,6 +268,7 @@ export const {
   useGetUploadVideoUrlMutation,
   useGetTransactionsQuery,
   useCreateTransactionMutation,
+  useGetUploadImageUrlMutation, // Новый хук
   useCreateStripePaymentIntentMutation,
   useGetUserEnrolledCoursesQuery,
   useGetUserCourseProgressQuery,

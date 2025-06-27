@@ -72,10 +72,11 @@ export const createCourse = async (
       status,
       sections,
       enrollments,
+      image,
     } = req.body;
 
-    if (!teacherId || !teacherName) {
-      res.status(400).json({ message: "Необходимо указать ID и имя преподавателя" });
+    if (!teacherId || !teacherName || !image) {
+      res.status(400).json({ message: "Необходимо указать ID и имя преподавателя и изображение курса" });
       return;
     }
 
@@ -86,7 +87,7 @@ export const createCourse = async (
       title: title || "Новый курс",
       description: description || "",
       category: category || "Без категории",
-      image: "",
+      image,
       price: price || 0,
       level: level || "Beginner",
       status: status || "Draft",
@@ -106,7 +107,7 @@ export const updateCourse = async (
   res: Response
 ): Promise<void> => {
   const { courseId } = req.params;
-  const updateData = req.body; // Теперь это JSON
+  const updateData = req.body;
   const { userId } = getAuth(req);
 
   try {
@@ -123,7 +124,6 @@ export const updateCourse = async (
       return;
     }
 
-    // Проверяем и обновляем цену
     if (updateData.price) {
       const price = parseInt(updateData.price);
       if (isNaN(price)) {
@@ -133,10 +133,9 @@ export const updateCourse = async (
         });
         return;
       }
-      updateData.price = price; // Цена уже в центах
+      updateData.price = price;
     }
 
-    // Обновляем секции, если они переданы
     if (updateData.sections) {
       updateData.sections = updateData.sections.map((section: any) => ({
         ...section,
@@ -148,7 +147,6 @@ export const updateCourse = async (
       }));
     }
 
-    // Обновляем курс
     Object.assign(course, updateData);
     await course.save();
 
@@ -158,36 +156,7 @@ export const updateCourse = async (
   }
 };
 
-export const deleteCourse = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { courseId } = req.params;
-  const { userId } = getAuth(req);
-
-  try {
-    const course = await Course.get(courseId);
-    if (!course) {
-      res.status(404).json({ message: "Курс не найден" });
-      return;
-    }
-
-    if (course.teacherId !== userId) {
-      res
-        .status(403)
-        .json({ message: "Нет прав для удаления этого курса" });
-      return;
-    }
-
-    await Course.delete(courseId);
-
-    res.json({ message: "Курс успешно удалён", data: course });
-  } catch (error) {
-    res.status(500).json({ message: "Ошибка при удалении курса", error });
-  }
-};
-
-export const getUploadVideoUrl = async (
+export const getUploadImageUrl = async (
   req: Request,
   res: Response
 ): Promise<void> => {
@@ -200,7 +169,7 @@ export const getUploadVideoUrl = async (
 
   try {
     const uniqueId = uuidv4();
-    const s3Key = `videos/${uniqueId}/${fileName}`;
+    const s3Key = `images/${uniqueId}/${fileName}`;
 
     const s3Params = {
       Bucket: process.env.S3_BUCKET_NAME || "",
@@ -210,13 +179,13 @@ export const getUploadVideoUrl = async (
     };
 
     const uploadUrl = s3.getSignedUrl("putObject", s3Params);
-    const videoUrl = `${process.env.CLOUDFRONT_DOMAIN}/videos/${uniqueId}/${fileName}`;
+    const imageUrl = `${process.env.CLOUDFRONT_DOMAIN}/images/${uniqueId}/${fileName}`;
 
     res.json({
-      message: "Ссылка для загрузки успешно сгенерирована",
-      data: { uploadUrl, videoUrl },
+      message: "Ссылка для загрузки изображения успешно сгенерирована",
+      data: { uploadUrl, imageUrl },
     });
   } catch (error) {
-    res.status(500).json({ message: "Ошибка при генерации ссылки для загрузки", error });
+    res.status(500).json({ message: "Ошибка при генерации ссылки для загрузки изображения", error });
   }
 };

@@ -11,6 +11,7 @@ import {
   useGetCourseQuery,
   useUpdateCourseMutation,
   useGetUploadVideoUrlMutation,
+  useGetUploadImageUrlMutation,
 } from "@/state/api";
 import { useAppDispatch, useAppSelector } from "@/state/redux";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,9 +19,11 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import DroppableComponent from "./Droppable";
 import ChapterModal from "./ChapterModal";
 import SectionModal from "./SectionModal";
+import { CourseFormData } from "@/types";
 
 const CourseEditor = () => {
   const router = useRouter();
@@ -29,6 +32,7 @@ const CourseEditor = () => {
   const { data: course, isLoading, refetch } = useGetCourseQuery(id);
   const [updateCourse] = useUpdateCourseMutation();
   const [getUploadVideoUrl] = useGetUploadVideoUrlMutation();
+  const [getUploadImageUrl] = useGetUploadImageUrlMutation();
 
   const dispatch = useAppDispatch();
   const { sections } = useAppSelector((state) => state.global.courseEditor);
@@ -41,6 +45,7 @@ const CourseEditor = () => {
       courseCategory: "",
       coursePrice: "0",
       courseStatus: false,
+      courseImage: undefined,
     },
   });
 
@@ -52,6 +57,7 @@ const CourseEditor = () => {
         courseCategory: course.category,
         coursePrice: centsToDollars(course.price),
         courseStatus: course.status === "Published",
+        courseImage: undefined,
       });
       dispatch(setSections(course.sections || []));
     }
@@ -59,24 +65,41 @@ const CourseEditor = () => {
 
   const onSubmit = async (data: CourseFormData) => {
     try {
-      // Загружаем видео и обновляем секции
       const updatedSections = await uploadAllVideos(
         sections,
         id,
         getUploadVideoUrl
       );
 
-      // Формируем JSON-объект для отправки
+      let imageUrl = course?.image;
+      if (data.courseImage instanceof File) {
+        const { uploadUrl, imageUrl: newImageUrl } = await getUploadImageUrl({
+          courseId: id,
+          fileName: data.courseImage.name,
+          fileType: data.courseImage.type,
+        }).unwrap();
+
+        await fetch(uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": data.courseImage.type,
+          },
+          body: data.courseImage,
+        });
+        imageUrl = newImageUrl;
+        toast.success("Изображение курса успешно загружено!");
+      }
+
       const courseData = {
         title: data.courseTitle,
         description: data.courseDescription,
         category: data.courseCategory,
-        price: parseFloat(data.coursePrice) * 100, // Конвертируем доллары в центы
+        price: parseFloat(data.coursePrice) * 100,
         status: data.courseStatus ? "Published" : "Draft",
         sections: updatedSections,
+        image: imageUrl,
       };
 
-      // Отправляем JSON на сервер
       await updateCourse({
         courseId: id,
         courseData,
@@ -149,31 +172,38 @@ const CourseEditor = () => {
                   placeholder="Введите описание курса"
                   initialValue={course?.description}
                 />
-<CustomFormField
-  name="courseCategory"
-  label="Категория курса"
-  type="select"
-  placeholder="Выберите категорию"
-  options={[
-    { value: "web-development", label: "Веб-разработка" },
-    { value: "data-science", label: "Наука о данных" },
-    { value: "artificial-intelligence", label: "Искусственный интеллект" },
-    { value: "mobile-development", label: "Мобильная разработка" },
-    { value: "cloud-computing", label: "Облачные вычисления" },
-    { value: "cybersecurity", label: "Кибербезопасность" },
-    { value: "machine-learning", label: "Машинное обучение" },
-    { value: "blockchain", label: "Блокчейн" },
-    { value: "game-development", label: "Разработка игр" },
-    { value: "databases", label: "Базы данных" },
-  ]}
-  initialValue={course?.category}
-/>
+                <CustomFormField
+                  name="courseCategory"
+                  label="Категория курса"
+                  type="select"
+                  placeholder="Выберите категорию"
+                  options={[
+                    { value: "web-development", label: "Веб-разработка" },
+                    { value: "data-science", label: "Наука о данных" },
+                    { value: "artificial-intelligence", label: "Искусственный интеллект" },
+                    { value: "mobile-development", label: "Мобильная разработка" },
+                    { value: "cloud-computing", label: "Облачные вычисления" },
+                    { value: "cybersecurity", label: "Кибербезопасность" },
+                    { value: "machine-learning", label: "Машинное обучение" },
+                    { value: "blockchain", label: "Блокчейн" },
+                    { value: "game-development", label: "Разработка игр" },
+                    { value: "databases", label: "Базы данных" },
+                  ]}
+                  initialValue={course?.category}
+                />
                 <CustomFormField
                   name="coursePrice"
                   label="Цена курса"
                   type="number"
                   placeholder="0"
                   initialValue={course?.price}
+                />
+                <CustomFormField
+                  name="courseImage"
+                  label="Изображение курса"
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  placeholder="Выберите фото"
                 />
               </div>
             </div>
@@ -187,9 +217,7 @@ const CourseEditor = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    dispatch(openSectionModal({ sectionIndex: null }))
-                  }
+                  onClick={() => dispatch(openSectionModal({ sectionIndex: null }))}
                   className="border-none text-primary-700 group"
                 >
                   <Plus className="mr-1 h-4 w-4 text-primary-700 group-hover:white-100" />

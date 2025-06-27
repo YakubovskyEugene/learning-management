@@ -26,6 +26,7 @@ const CourseCreateModal = ({ isOpen, onClose, onSubmit }: CourseCreateModalProps
       courseCategory: "",
       coursePrice: "0",
       courseStatus: false,
+      courseImage: undefined,
     },
   });
 
@@ -54,33 +55,30 @@ const CourseCreateModal = ({ isOpen, onClose, onSubmit }: CourseCreateModalProps
               label="Название курса"
               placeholder="Введите название курса"
             />
-
             <CustomFormField
               name="courseDescription"
               label="Описание курса"
               type="textarea"
               placeholder="Введите описание курса"
             />
-
-<CustomFormField
-  name="courseCategory"
-  label="Категория курса"
-  type="select"
-  placeholder="Выберите категорию"
-  options={[
-    { value: "web-development", label: "Веб-разработка" },
-  { value: "data-science", label: "Наука о данных" },
-  { value: "artificial-intelligence", label: "Искусственный интеллект" },
-  { value: "mobile-development", label: "Мобильная разработка" },
-  { value: "cloud-computing", label: "Облачные вычисления" },
-  { value: "cybersecurity", label: "Кибербезопасность" },
-  { value: "machine-learning", label: "Машинное обучение" },
-  { value: "blockchain", label: "Блокчейн" },
-  { value: "game-development", label: "Разработка игр" },
-  { value: "databases", label: "Базы данных" },
-  ]}
-/>
-
+            <CustomFormField
+              name="courseCategory"
+              label="Категория курса"
+              type="select"
+              placeholder="Выберите категорию"
+              options={[
+                { value: "web-development", label: "Веб-разработка" },
+                { value: "data-science", label: "Наука о данных" },
+                { value: "artificial-intelligence", label: "Искусственный интеллект" },
+                { value: "mobile-development", label: "Мобильная разработка" },
+                { value: "cloud-computing", label: "Облачные вычисления" },
+                { value: "cybersecurity", label: "Кибербезопасность" },
+                { value: "machine-learning", label: "Машинное обучение" },
+                { value: "blockchain", label: "Блокчейн" },
+                { value: "game-development", label: "Разработка игр" },
+                { value: "databases", label: "Базы данных" },
+              ]}
+            />
             <CustomFormField
               name="coursePrice"
               label="Цена курса"
@@ -88,7 +86,13 @@ const CourseCreateModal = ({ isOpen, onClose, onSubmit }: CourseCreateModalProps
               placeholder="0"
               className="w-full"
             />
-
+            <CustomFormField
+              name="courseImage"
+              label="Изображение курса"
+              type="file"
+              accept="image/jpeg,image/png"
+              placeholder="Выберите фото"
+            />
             <div className="course-create-modal__actions flex justify-end space-x-4 mt-6">
               <Button type="button" variant="outline" onClick={onClose} className="px-4 py-2">
                 Отмена

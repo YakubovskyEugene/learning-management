@@ -6,6 +6,7 @@ import {
   listCourses,
   updateCourse,
   getUploadVideoUrl,
+  getUploadImageUrl,
 } from "../controllers/courseController";
 import { requireAuth } from "@clerk/express";
 
@@ -15,13 +16,19 @@ router.get("/", listCourses);
 router.post("/", requireAuth(), createCourse);
 
 router.get("/:courseId", getCourse);
-router.put("/:courseId", requireAuth(), updateCourse); // Убрали upload.single("image")
+router.put("/:courseId", requireAuth(), updateCourse);
 router.delete("/:courseId", requireAuth(), deleteCourse);
 
 router.post(
   "/:courseId/sections/:sectionId/chapters/:chapterId/get-upload-url",
   requireAuth(),
   getUploadVideoUrl
+);
+
+router.post(
+  "/:courseId/get-upload-image-url",
+  requireAuth(),
+  getUploadImageUrl
 );
 
 export default router;

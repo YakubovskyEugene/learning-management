@@ -7,6 +7,14 @@ export const courseSchema = z.object({
   courseCategory: z.string().min(1, "Требуется категория"),
   coursePrice: z.string(),
   courseStatus: z.boolean(),
+  courseImage: z.instanceof(File, { message: "Требуется изображение курса" }).refine(
+    (file) => {
+      const allowedExtensions = [".jpg", ".jpeg", ".png"];
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      return ext && allowedExtensions.includes(`.${ext}`);
+    },
+    { message: "Поддерживаются только файлы .jpg, .jpeg, .png" }
+  ),
 });
 
 export type CourseFormData = z.infer<typeof courseSchema>;

@@ -9,12 +9,14 @@ import {
   useCreateCourseMutation,
   useDeleteCourseMutation,
   useGetCoursesQuery,
+  useGetUploadImageUrlMutation,
 } from "@/state/api";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import CourseCreateModal from "./CourseCreateModal";
-import { CourseFormData } from "@/types";
+import { Course, CourseFormData } from "@/types";
+import { toast } from "sonner";
 
 const Courses = () => {
   const router = useRouter();
@@ -23,10 +25,11 @@ const Courses = () => {
     data: courses,
     isLoading,
     isError,
-  } = useGetCoursesQuery({ category: "all", teacherView: true }); // Добавлен teacherView
+  } = useGetCoursesQuery({ category: "all", teacherView: true });
 
   const [createCourse] = useCreateCourseMutation();
   const [deleteCourse] = useDeleteCourseMutation();
+  const [getUploadImageUrl] = useGetUploadImageUrlMutation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -56,31 +59,46 @@ const Courses = () => {
     }
   };
 
-const handleCreateCourse = async (data: CourseFormData) => {
-  if (!user) return;
+  const handleCreateCourse = async (data: CourseFormData) => {
+    if (!user) return;
 
-  try {
-    const courseData: Partial<Course> = {
-      teacherId: user.id,
-      teacherName: user.fullName || "Неизвестный преподаватель",
-      title: data.courseTitle,
-      description: data.courseDescription,
-      category: data.courseCategory,
-      price: parseInt(data.coursePrice) * 100,
-      level: "Beginner" as "Beginner" | "Intermediate" | "Advanced",
-      status: data.courseStatus ? "Published" : "Draft",
-      sections: [],
-      enrollments: [],
-    };
+    try {
+      const { uploadUrl, imageUrl } = await getUploadImageUrl({
+        courseId: "temp",
+        fileName: data.courseImage.name,
+        fileType: data.courseImage.type,
+      }).unwrap();
 
-    const result = await createCourse(courseData).unwrap();
-    router.push(`/teacher/courses/${result.courseId}`, {
-      scroll: false,
-    });
-  } catch (error) {
-    console.error("Ошибка при создании курса:", error);
-  }
-};
+      await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": data.courseImage.type,
+        },
+        body: data.courseImage,
+      });
+
+      const courseData: Partial<Course> = {
+        teacherId: user.id,
+        teacherName: user.fullName || "Неизвестный преподаватель",
+        title: data.courseTitle,
+        description: data.courseDescription,
+        category: data.courseCategory,
+        price: parseInt(data.coursePrice) * 100,
+        level: "Beginner" as "Beginner" | "Intermediate" | "Advanced",
+        status: data.courseStatus ? "Published" : "Draft",
+        sections: [],
+        enrollments: [],
+        image: imageUrl,
+      };
+
+      const result = await createCourse(courseData).unwrap();
+      router.push(`/teacher/courses/${result.courseId}`, {
+        scroll: false,
+      });
+    } catch (error) {
+      console.error("Ошибка при создании курса:", error);
+    }
+  };
 
   if (isLoading) return <Loading />;
 
