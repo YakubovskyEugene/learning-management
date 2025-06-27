@@ -115,14 +115,14 @@ const ChapterModal = () => {
             <CustomFormField
               name="title"
               label="Chapter Title"
-              placeholder="Write chapter title here"
+              placeholder="Название главы"
             />
 
             <CustomFormField
               name="content"
               label="Chapter Content"
               type="textarea"
-              placeholder="Write chapter content here"
+              placeholder="Содержание главы"
             />
 
             <FormField
