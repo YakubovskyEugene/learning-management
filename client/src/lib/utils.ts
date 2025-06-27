@@ -239,10 +239,16 @@ export function convertToSubCurrency(amount: number, factor = 100) {
 export const NAVBAR_HEIGHT = 48;
 
 export const courseCategories = [
-  { value: "technology", label: "Технологии" },
-  { value: "science", label: "Наука" },
-  { value: "mathematics", label: "Математика" },
+  { value: "web-development", label: "Веб-разработка" },
+  { value: "data-science", label: "Наука о данных" },
   { value: "artificial-intelligence", label: "Искусственный интеллект" },
+  { value: "mobile-development", label: "Мобильная разработка" },
+  { value: "cloud-computing", label: "Облачные вычисления" },
+  { value: "cybersecurity", label: "Кибербезопасность" },
+  { value: "machine-learning", label: "Машинное обучение" },
+  { value: "blockchain", label: "Блокчейн" },
+  { value: "game-development", label: "Разработка игр" },
+  { value: "databases", label: "Базы данных" },
 ] as const;
 
 export const customDataGridStyles = {

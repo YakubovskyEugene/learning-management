@@ -62,18 +62,24 @@ const CourseCreateModal = ({ isOpen, onClose, onSubmit }: CourseCreateModalProps
               placeholder="Введите описание курса"
             />
 
-            <CustomFormField
-              name="courseCategory"
-              label="Категория курса"
-              type="select"
-              placeholder="Выберите категорию"
-              options={[
-                { value: "technology", label: "Технологии" },
-                { value: "science", label: "Наука" },
-                { value: "mathematics", label: "Математика" },
-                { value: "Artificial Intelligence", label: "Искусственный интеллект" },
-              ]}
-            />
+<CustomFormField
+  name="courseCategory"
+  label="Категория курса"
+  type="select"
+  placeholder="Выберите категорию"
+  options={[
+    { value: "web-development", label: "Веб-разработка" },
+  { value: "data-science", label: "Наука о данных" },
+  { value: "artificial-intelligence", label: "Искусственный интеллект" },
+  { value: "mobile-development", label: "Мобильная разработка" },
+  { value: "cloud-computing", label: "Облачные вычисления" },
+  { value: "cybersecurity", label: "Кибербезопасность" },
+  { value: "machine-learning", label: "Машинное обучение" },
+  { value: "blockchain", label: "Блокчейн" },
+  { value: "game-development", label: "Разработка игр" },
+  { value: "databases", label: "Базы данных" },
+  ]}
+/>
 
             <CustomFormField
               name="coursePrice"
