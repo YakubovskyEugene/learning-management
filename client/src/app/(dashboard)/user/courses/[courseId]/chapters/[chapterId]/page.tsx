@@ -105,12 +105,6 @@ const Course = () => {
               <TabsTrigger className="course__tab" value="Notes">
                 Заметки
               </TabsTrigger>
-              <TabsTrigger className="course__tab" value="Resources">
-                Ресурсы
-              </TabsTrigger>
-              <TabsTrigger className="course__tab" value="Quiz">
-                Тест
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent className="course__tab-content" value="Notes">
@@ -124,52 +118,12 @@ const Course = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent className="course__tab-content" value="Resources">
-              <Card className="course__tab-card">
-                <CardHeader className="course__tab-header">
-                  <CardTitle>Содержимое ресурсов</CardTitle>
-                </CardHeader>
-                <CardContent className="course__tab-body">
-                  {/* Добавьте содержимое ресурсов здесь */}
-                </CardContent>
-              </Card>
-            </TabsContent>
 
-            <TabsContent className="course__tab-content" value="Quiz">
-              <Card className="course__tab-card">
-                <CardHeader className="course__tab-header">
-                  <CardTitle>Содержимое теста</CardTitle>
-                </CardHeader>
-                <CardContent className="course__tab-body">
-                  {/* Добавьте содержимое теста здесь */}
-                </CardContent>
-              </Card>
-            </TabsContent>
+
+            
           </Tabs>
 
-          <Card className="course__instructor-card">
-            <CardContent className="course__instructor-info">
-              <div className="course__instructor-header">
-                <Avatar className="course__instructor-avatar">
-                  <AvatarImage alt={course.teacherName} />
-                  <AvatarFallback className="course__instructor-avatar-fallback">
-                    {course.teacherName[0]}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="course__instructor-details">
-                  <h4 className="course__instructor-name">
-                    {course.teacherName}
-                  </h4>
-                  <p className="course__instructor-title">Старший UX-дизайнер</p>
-                </div>
-              </div>
-              <div className="course__instructor-bio">
-                <p>
-                  Опытный старший UX-дизайнер с более чем 15-летним стажем в создании интуитивно понятных и привлекательных цифровых продуктов. Эксперт в управлении проектами по UX-дизайну.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          
         </div>
       </div>
     </div>
