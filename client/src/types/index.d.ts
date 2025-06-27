@@ -41,7 +41,7 @@ declare global {
       bio?: string;
       urls?: string[];
     };
-  }
+  } // ++
 
   interface Course {
     courseId: string;
