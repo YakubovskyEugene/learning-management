@@ -106,7 +106,7 @@ export const updateCourse = async (
   res: Response
 ): Promise<void> => {
   const { courseId } = req.params;
-  const updateData = { ...req.body };
+  const updateData = req.body; // Теперь это JSON
   const { userId } = getAuth(req);
 
   try {
@@ -123,6 +123,7 @@ export const updateCourse = async (
       return;
     }
 
+    // Проверяем и обновляем цену
     if (updateData.price) {
       const price = parseInt(updateData.price);
       if (isNaN(price)) {
@@ -132,16 +133,12 @@ export const updateCourse = async (
         });
         return;
       }
-      updateData.price = price * 100;
+      updateData.price = price; // Цена уже в центах
     }
 
+    // Обновляем секции, если они переданы
     if (updateData.sections) {
-      const sectionsData =
-        typeof updateData.sections === "string"
-          ? JSON.parse(updateData.sections)
-          : updateData.sections;
-
-      updateData.sections = sectionsData.map((section: any) => ({
+      updateData.sections = updateData.sections.map((section: any) => ({
         ...section,
         sectionId: section.sectionId || uuidv4(),
         chapters: section.chapters.map((chapter: any) => ({
@@ -151,6 +148,7 @@ export const updateCourse = async (
       }));
     }
 
+    // Обновляем курс
     Object.assign(course, updateData);
     await course.save();
 

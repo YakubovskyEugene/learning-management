@@ -5,11 +5,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { courseSchema } from "@/lib/schemas";
-import {
-  centsToDollars,
-  createCourseFormData,
-  uploadAllVideos,
-} from "@/lib/utils";
+import { centsToDollars, uploadAllVideos } from "@/lib/utils";
 import { openSectionModal, setSections } from "@/state";
 import {
   useGetCourseQuery,
@@ -59,21 +55,31 @@ const CourseEditor = () => {
       });
       dispatch(setSections(course.sections || []));
     }
-  }, [course, methods, dispatch]); 
+  }, [course, methods, dispatch]);
 
   const onSubmit = async (data: CourseFormData) => {
     try {
+      // Загружаем видео и обновляем секции
       const updatedSections = await uploadAllVideos(
         sections,
         id,
         getUploadVideoUrl
       );
 
-      const formData = createCourseFormData(data, updatedSections);
+      // Формируем JSON-объект для отправки
+      const courseData = {
+        title: data.courseTitle,
+        description: data.courseDescription,
+        category: data.courseCategory,
+        price: parseFloat(data.coursePrice) * 100, // Конвертируем доллары в центы
+        status: data.courseStatus ? "Published" : "Draft",
+        sections: updatedSections,
+      };
 
+      // Отправляем JSON на сервер
       await updateCourse({
         courseId: id,
-        formData,
+        courseData,
       }).unwrap();
 
       refetch();
@@ -136,7 +142,6 @@ const CourseEditor = () => {
                   className="border-none"
                   initialValue={course?.title}
                 />
-
                 <CustomFormField
                   name="courseDescription"
                   label="Описание курса"
@@ -144,24 +149,19 @@ const CourseEditor = () => {
                   placeholder="Введите описание курса"
                   initialValue={course?.description}
                 />
-
-                <CustomFormField
-                  name="courseCategory"
-                  label="Категория курса"
-                  type="select"
-                  placeholder="Выберите категорию"
-                  options={[
-                    { value: "technology", label: "Технологии" },
-                    { value: "science", label: "Наука" },
-                    { value: "mathematics", label: "Математика" },
-                    {
-                      value: "Artificial Intelligence",
-                      label: "Искусственный интеллект",
-                    },
-                  ]}
-                  initialValue={course?.category}
-                />
-
+<CustomFormField
+  name="courseCategory"
+  label="Категория курса"
+  type="select"
+  placeholder="Выберите категорию"
+  options={[
+    { value: "technology", label: "Технологии" },
+    { value: "science", label: "Наука" },
+    { value: "mathematics", label: "Математика" },
+    { value: "artificial-intelligence", label: "Искусственный интеллект" },
+  ]}
+  initialValue={course?.category}
+/>
                 <CustomFormField
                   name="coursePrice"
                   label="Цена курса"
@@ -177,7 +177,6 @@ const CourseEditor = () => {
                 <h2 className="text-2xl font-semibold text-secondary-foreground">
                   Секции
                 </h2>
-
                 <Button
                   type="button"
                   variant="outline"

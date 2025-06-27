@@ -56,29 +56,31 @@ const Courses = () => {
     }
   };
 
-  const handleCreateCourse = async (data: CourseFormData) => {
-    if (!user) return;
+const handleCreateCourse = async (data: CourseFormData) => {
+  if (!user) return;
 
-    try {
-      const result = await createCourse({
-        teacherId: user.id,
-        teacherName: user.fullName || "Неизвестный преподаватель",
-        title: data.courseTitle,
-        description: data.courseDescription,
-        category: data.courseCategory,
-        price: parseInt(data.coursePrice) * 100,
-        level: "Beginner",
-        status: data.courseStatus ? "Published" : "Draft",
-        sections: [],
-        enrollments: [],
-      }).unwrap();
-      router.push(`/teacher/courses/${result.courseId}`, {
-        scroll: false,
-      });
-    } catch (error) {
-      console.error("Ошибка при создании курса:", error);
-    }
-  };
+  try {
+    const courseData: Partial<Course> = {
+      teacherId: user.id,
+      teacherName: user.fullName || "Неизвестный преподаватель",
+      title: data.courseTitle,
+      description: data.courseDescription,
+      category: data.courseCategory,
+      price: parseInt(data.coursePrice) * 100,
+      level: "Beginner" as "Beginner" | "Intermediate" | "Advanced",
+      status: data.courseStatus ? "Published" : "Draft",
+      sections: [],
+      enrollments: [],
+    };
+
+    const result = await createCourse(courseData).unwrap();
+    router.push(`/teacher/courses/${result.courseId}`, {
+      scroll: false,
+    });
+  } catch (error) {
+    console.error("Ошибка при создании курса:", error);
+  }
+};
 
   if (isLoading) return <Loading />;
 

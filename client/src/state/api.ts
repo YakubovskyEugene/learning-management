@@ -115,18 +115,21 @@ export const api = createApi({
 }),
 
     updateCourse: build.mutation<
-      Course,
-      { courseId: string; formData: FormData }
-    >({
-      query: ({ courseId, formData }) => ({
-        url: `courses/${courseId}`,
-        method: "PUT",
-        body: formData,
-      }),
-      invalidatesTags: (result, error, { courseId }) => [
-        { type: "Courses", id: courseId },
-      ],
-    }),
+  Course,
+  { courseId: string; courseData: any }
+>({
+  query: ({ courseId, courseData }) => ({
+    url: `courses/${courseId}`,
+    method: "PUT",
+    body: courseData,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }),
+  invalidatesTags: (result, error, { courseId }) => [
+    { type: "Courses", id: courseId },
+  ],
+}),
 
     deleteCourse: build.mutation<{ message: string }, string>({
       query: (courseId) => ({

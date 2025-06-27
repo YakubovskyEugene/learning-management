@@ -287,29 +287,6 @@ export const customDataGridStyles = {
   },
 };
 
-export const createCourseFormData = (
-  data: CourseFormData,
-  sections: Section[]
-): FormData => {
-  const formData = new FormData();
-  formData.append("title", data.courseTitle);
-  formData.append("description", data.courseDescription);
-  formData.append("category", data.courseCategory);
-  formData.append("price", data.coursePrice.toString());
-  formData.append("status", data.courseStatus ? "Опубликован" : "Черновик");
-
-  const sectionsWithVideos = sections.map((section) => ({
-    ...section,
-    chapters: section.chapters.map((chapter) => ({
-      ...chapter,
-      video: chapter.video,
-    })),
-  }));
-
-  formData.append("sections", JSON.stringify(sectionsWithVideos));
-
-  return formData;
-};
 
 export const uploadAllVideos = async (
   localSections: Section[],
@@ -320,16 +297,20 @@ export const uploadAllVideos = async (
     ...section,
     chapters: section.chapters.map((chapter) => ({
       ...chapter,
+      video: chapter.video instanceof File ? null : chapter.video,
     })),
   }));
 
   for (let i = 0; i < updatedSections.length; i++) {
     for (let j = 0; j < updatedSections[i].chapters.length; j++) {
-      const chapter = updatedSections[i].chapters[j];
-      if (chapter.video instanceof File && chapter.video.type === "video/mp4") {
+      const originalChapter = localSections[i].chapters[j];
+      if (
+        originalChapter.video instanceof File &&
+        originalChapter.video.type === "video/mp4"
+      ) {
         try {
           const updatedChapter = await uploadVideo(
-            chapter,
+            originalChapter,
             courseId,
             updatedSections[i].sectionId,
             getUploadVideoUrl
@@ -337,7 +318,7 @@ export const uploadAllVideos = async (
           updatedSections[i].chapters[j] = updatedChapter;
         } catch (error) {
           console.error(
-            `Не удалось загрузить видео для главы ${chapter.chapterId}:`,
+            `Не удалось загрузить видео для главы ${originalChapter.chapterId}:`,
             error
           );
         }
